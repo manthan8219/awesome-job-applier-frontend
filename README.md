@@ -1,0 +1,1 @@
+# awesome-job-applier-frontend
