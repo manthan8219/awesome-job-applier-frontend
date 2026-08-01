@@ -139,6 +139,12 @@ export const api = {
     });
   },
 
+  async dismissApplication(id: number): Promise<void> {
+    await request(`/jobs/${encodeURIComponent(id)}/dismiss`, {
+      method: 'POST',
+    });
+  },
+
   async setApplicationOutcome(
     id: number,
     outcome: Outcome,

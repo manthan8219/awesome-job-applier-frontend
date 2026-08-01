@@ -167,4 +167,55 @@ describe('JobsPage review flow', () => {
       'false',
     );
   });
+
+  it('dismisses a queued job so it leaves the review queue', async () => {
+    const apps: Application[] = [
+      makeApp({
+        id: 1,
+        status: 'queued',
+        role: 'Backend Engineer',
+        company: 'Acme',
+      }),
+      makeApp({
+        id: 2,
+        status: 'applied',
+        role: 'Platform Engineer',
+        company: 'Globex',
+      }),
+    ];
+    vi.spyOn(api, 'getApplications').mockImplementation(async () =>
+      apps.map((a) => ({ ...a })),
+    );
+    vi.spyOn(api, 'getConfig').mockResolvedValue({
+      ...emptyProfile(),
+      applyConsent: false,
+      maxAppsPerDay: 25,
+    });
+    const dismiss = vi
+      .spyOn(api, 'dismissApplication')
+      .mockImplementation(async (id) => {
+        const target = apps.find((a) => a.id === id);
+        if (target) {
+          target.status = 'skipped';
+          target.reason = 'dismissed by user';
+          target.approved = false;
+        }
+      });
+
+    renderPage();
+
+    const dismissBtn = await screen.findByRole('button', {
+      name: /dismiss backend engineer/i,
+    });
+    fireEvent.click(dismissBtn);
+
+    await waitFor(() => expect(dismiss).toHaveBeenCalledWith(1));
+    // After the refetch the row is no longer in the queue: no dismiss action,
+    // and it shows the skipped status instead.
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: /dismiss backend engineer/i }),
+      ).not.toBeInTheDocument(),
+    );
+  });
 });
