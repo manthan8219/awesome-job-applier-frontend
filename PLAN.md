@@ -72,7 +72,7 @@
 
 ### 🔵 Product leaps (advisory)
 
-- [ ] Profession-aware onboarding (doctor/engineer/designer…)
+- [x] Profession-aware onboarding (doctor/engineer/designer…) — `SuggestProfession` (backend) + detected-profession badge in the onboarding wizard (KAN-44)
 - [x] Pipeline kanban: apply → replied → interview → offer — `PipelineBoard` on Jobs (List | Board toggle), move cards via select, persists via the outcome API (KAN-41)
 - [x] Analytics: response rate, conversion, per-provider yield, CSV export — `/analytics` page with funnel + rate cards + provider table + export (KAN-42)
 - [x] Notifications: channel list + test-send (KAN-43) and **run-summary digest trigger** (KAN-46) — `POST /notify/summary` fans out a real daily-summary event to every configured channel; the only not-yet-automated piece is the *scheduled* digest (TUI scheduler)
@@ -81,4 +81,4 @@
 
 ### 🔧 Repo hygiene
 
-- [ ] Push backend `feat/auto-apply-providers` branch (contains the API fixes + `cmd/e2e-seed`)
+- [x] Push backend `feat/auto-apply-providers` branch — obsolete: its API fixes + `cmd/e2e-seed` all landed via proper PRs; the stale remote branch can be deleted
