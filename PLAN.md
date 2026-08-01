@@ -48,7 +48,7 @@
 
 ### 🔴 Quick wins — fix surfaces that are broken/hollow today
 
-- [ ] Resume "New resume" tab (ImproveTab) crashes: backend `/resume/improve` stub shape ≠ `{previewMD, dir, review}`
+- [x] Resume "New resume" tab (ImproveTab) crash — **defensive shape guard** (backend `/resume/improve` stub ≠ `{previewMD, dir, review}`); real backend handler still TODO
 - [ ] Outreach Setup key mismatch: backend `maxEmailsDay`/`maxLinkedInDay` vs frontend `maxEmailsPerDay`/`maxLinkedInPerDay`
 - [ ] `sendOutreachItem` return shape: backend `{id}` vs `OutreachItem`
 - [ ] A11y: ConfigPage labels not associated with inputs (`htmlFor`/`id`)
