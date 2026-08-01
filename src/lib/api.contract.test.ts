@@ -243,6 +243,23 @@ describe.skipIf(!backendAvailable)(
       it('blocks apply without apply consent (safety gate)', async () => {
         await expect(api.applySelected([1])).rejects.toThrow(/consent/i);
       });
+
+      it('creates a manual job in the review queue', async () => {
+        const url = 'https://acme.health/careers/nurse-contract';
+        const created = await api.createApplication({
+          role: 'Registered Nurse',
+          company: 'Acme Health',
+          url,
+          location: 'Remote',
+          remote: true,
+        });
+        expect(created.id).toBeGreaterThan(0);
+        expect(created.status).toBe('queued');
+        expect(created.provider).toBe('manual');
+
+        const after = await api.getApplications('');
+        expect(after.some((a) => a.url === url)).toBe(true);
+      });
     });
 
     describe('companies + contacts', () => {

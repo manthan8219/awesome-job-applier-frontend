@@ -14,17 +14,22 @@ export interface ProgressEntry {
   errMsg?: string;
 }
 
+/** Payload for manually adding a job to the review queue. */
+export interface NewApplicationInput {
+  role: string;
+  company: string;
+  url: string;
+  location?: string;
+  remote?: boolean;
+  provider?: string;
+}
+
 /** A line in the live run feed / recent list (TUI DashRecent.Status). */
 export type LiveStatus =
   'found' | 'applied' | 'failed' | 'queued' | 'skipped' | 'dry-run';
 
 /** Application status (store.Status). */
-export type AppStatus =
-  | 'applied'
-  | 'skipped'
-  | 'failed'
-  | 'queued'
-  | 'dry-run';
+export type AppStatus = 'applied' | 'skipped' | 'failed' | 'queued' | 'dry-run';
 
 /** Post-apply pipeline stage (store.Outcome). */
 export type Outcome =

@@ -6,12 +6,12 @@ import ConfigPage from '@/pages/ConfigPage';
 import DashboardPage from '@/pages/DashboardPage';
 import ResumePage from '@/pages/ResumePage';
 import JobsPage from '@/pages/JobsPage';
+import JobNewPage from '@/pages/JobNewPage';
 import JobDetailPage from '@/pages/JobDetailPage';
 import CompaniesPage from '@/pages/CompaniesPage';
 import OutreachPage from '@/pages/OutreachPage';
 import ContactsPage from '@/pages/ContactsPage';
 import LogsPage from '@/pages/LogsPage';
-import ComingSoonPage from '@/pages/ComingSoonPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 export default function App() {
@@ -29,7 +29,7 @@ export default function App() {
           <Route path="/config" element={<ConfigPage />} />
           <Route path="/resume" element={<ResumePage />} />
           <Route path="/jobs" element={<JobsPage />} />
-          <Route path="/jobs/new" element={<ComingSoonPage title="New Job" />} />
+          <Route path="/jobs/new" element={<JobNewPage />} />
           <Route path="/jobs/:id" element={<JobDetailPage />} />
           <Route path="/companies" element={<CompaniesPage />} />
           <Route path="/outreach" element={<OutreachPage />} />
@@ -41,4 +41,3 @@ export default function App() {
     </Routes>
   );
 }
-
