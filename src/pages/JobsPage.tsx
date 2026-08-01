@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
 import { OutcomeFunnel } from '@/components/jobs/OutcomeFunnel';
+import { PipelineBoard } from '@/components/jobs/PipelineBoard';
 import { ConfirmApplyDialog } from '@/components/review/ConfirmApplyDialog';
 import { useApplications } from '@/hooks/useApplications';
 import { useSetOutcome } from '@/hooks/useSetOutcome';
@@ -139,6 +140,7 @@ function JobRow({
 export default function JobsPage() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
+  const [view, setView] = useState<'list' | 'board'>('list');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
 
@@ -167,6 +169,11 @@ export default function JobsPage() {
       return true;
     });
   }, [apps, filter]);
+
+  const appliedApps = useMemo(
+    () => apps.filter((a) => a.status === 'applied'),
+    [apps],
+  );
 
   function cycle(a: Application) {
     setOutcome.mutate({
@@ -248,11 +255,31 @@ export default function JobsPage() {
             </button>
           ))}
         </div>
-        {queued.length > 0 && (
-          <Button size="sm" variant="ghost" onClick={approveAllVisible}>
-            Approve all in queue ({queued.length})
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1 rounded-lg bg-ink-800/60 p-1">
+            {(['list', 'board'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                aria-pressed={view === v}
+                onClick={() => setView(v)}
+                className={cn(
+                  'rounded-md px-3 py-1 text-xs capitalize transition-all',
+                  view === v
+                    ? 'bg-neon-cyan/15 text-neon-cyan'
+                    : 'text-slate-400 hover:text-slate-200',
+                )}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+          {queued.length > 0 && (
+            <Button size="sm" variant="ghost" onClick={approveAllVisible}>
+              Approve all in queue ({queued.length})
+            </Button>
+          )}
+        </div>
       </div>
 
       {approvedIds.length > 0 && (
@@ -284,7 +311,28 @@ export default function JobsPage() {
         <OutcomeFunnel apps={apps} />
       </Card>
 
-      {isLoading ? (
+      {view === 'board' ? (
+        <div className="space-y-4">
+          {isLoading ? (
+            <Card className="space-y-2 p-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </Card>
+          ) : appliedApps.length === 0 ? (
+            <Card>
+              <EmptyState
+                icon={Briefcase}
+                title="No applied jobs yet"
+                description="Approved jobs you apply to land here — move them through replied → interview → offer."
+                className="py-16"
+              />
+            </Card>
+          ) : (
+            <PipelineBoard apps={appliedApps} />
+          )}
+        </div>
+      ) : isLoading ? (
         <Card className="space-y-2 p-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
