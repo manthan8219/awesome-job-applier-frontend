@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface ConfirmApplyDialogProps {
   open: boolean;
@@ -33,6 +34,9 @@ export function ConfirmApplyDialog({
 }: ConfirmApplyDialogProps) {
   const [consent, setConsent] = useState(consentGiven);
 
+  // Trap Tab + Escape while the dialog is visible; restore focus on close.
+  const containerRef = useFocusTrap(open && count > 0, onCancel);
+
   useEffect(() => {
     if (open) setConsent(consentGiven);
   }, [open, consentGiven]);
@@ -42,6 +46,7 @@ export function ConfirmApplyDialog({
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-ink-950/70 p-4 backdrop-blur-sm">
       <motion.div
+        ref={containerRef}
         role="dialog"
         aria-modal="true"
         aria-label="Confirm applications"

@@ -61,4 +61,77 @@ describe('ConfirmApplyDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: /submit applications/i }));
     expect(onConfirm).toHaveBeenCalledWith(false);
   });
+
+  it('moves focus into the dialog when it opens', () => {
+    renderDialog();
+    // The first focusable element (the consent checkbox) receives focus.
+    expect(screen.getByRole('checkbox')).toHaveFocus();
+  });
+
+  it('closes the dialog on Escape', () => {
+    const onCancel = vi.fn();
+    renderDialog({ onCancel });
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('traps Tab focus within the dialog', () => {
+    renderDialog();
+    // consentGiven=false + consent unchecked → submit is disabled, so the
+    // focusables are [checkbox, cancel].
+    const checkbox = screen.getByRole('checkbox');
+    const cancel = screen.getByRole('button', { name: /cancel/i });
+
+    cancel.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(checkbox).toHaveFocus();
+
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(cancel).toHaveFocus();
+  });
+
+  it('restores focus to the trigger when the dialog closes', () => {
+    const onCancel = vi.fn();
+    const { rerender } = render(
+      <button type="button">Trigger</button>,
+    );
+    const trigger = screen.getByRole('button', { name: /trigger/i });
+    trigger.focus();
+
+    rerender(
+      <>
+        <button type="button">Trigger</button>
+        <ConfirmApplyDialog
+          open
+          count={1}
+          remainingToday={24}
+          delaySec={8}
+          consentGiven={false}
+          onConfirm={() => undefined}
+          onCancel={onCancel}
+          applying={false}
+          error={null}
+        />
+      </>,
+    );
+    expect(screen.getByRole('checkbox')).toHaveFocus();
+
+    rerender(
+      <>
+        <button type="button">Trigger</button>
+        <ConfirmApplyDialog
+          open={false}
+          count={1}
+          remainingToday={24}
+          delaySec={8}
+          consentGiven={false}
+          onConfirm={() => undefined}
+          onCancel={onCancel}
+          applying={false}
+          error={null}
+        />
+      </>,
+    );
+    expect(trigger).toHaveFocus();
+  });
 });
