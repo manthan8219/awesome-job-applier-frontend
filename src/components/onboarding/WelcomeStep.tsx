@@ -75,12 +75,12 @@ export function WelcomeStep({
           ))}
         </div>
       )}
-      {aiOff && (
+      {(!aiEnabled || aiOff) && (
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neon-amber/20 bg-neon-amber/5 px-3 py-2">
           <p className="flex-1 text-xs text-slate-400">
             {aiEnabled
               ? 'AI is unreachable right now — title suggestions are unavailable.'
-              : 'AI Assist is off — title suggestions are unavailable.'}
+              : 'AI Assist is off — turn it on for smarter matches, resume fit-scoring, and tailored answers.'}
           </p>
           {!aiEnabled && (
             <Button

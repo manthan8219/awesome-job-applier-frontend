@@ -40,6 +40,8 @@ interface ProfileStepProps {
   analyzing: boolean;
   analysisMsg: string | null;
   onAnalyze: () => void;
+  /** Whether AI Assist is on — drives the resume-analysis nudge. */
+  aiEnabled: boolean;
   onShowJobs: () => void;
   onSkip: () => void;
   onBack: () => void;
@@ -74,6 +76,7 @@ export function ProfileStep({
   analyzing,
   analysisMsg,
   onAnalyze,
+  aiEnabled,
   onShowJobs,
   onSkip,
   onBack,
@@ -208,6 +211,13 @@ export function ProfileStep({
           found in your resume (name, email, LinkedIn, phone…) are saved to your
           profile automatically.
         </p>
+        {resumePath.trim() && !aiEnabled && (
+          <p className="text-xs text-neon-amber/90">
+            AI Assist is off — resume analysis is basic (validity + contact
+            only). Turn it on to get a full career profile, skill extraction,
+            and per-job fit scores.
+          </p>
+        )}
       </div>
 
       <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-neon-amber/20 bg-neon-amber/5 px-3.5 py-3">
