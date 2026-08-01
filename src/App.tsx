@@ -8,6 +8,7 @@ import ResumePage from '@/pages/ResumePage';
 import JobsPage from '@/pages/JobsPage';
 import JobNewPage from '@/pages/JobNewPage';
 import JobDetailPage from '@/pages/JobDetailPage';
+import BookmarkletPage from '@/pages/BookmarkletPage';
 import CompaniesPage from '@/pages/CompaniesPage';
 import OutreachPage from '@/pages/OutreachPage';
 import ContactsPage from '@/pages/ContactsPage';
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/resume" element={<ResumePage />} />
           <Route path="/jobs" element={<JobsPage />} />
           <Route path="/jobs/new" element={<JobNewPage />} />
+          <Route path="/bookmarklet" element={<BookmarkletPage />} />
           <Route path="/jobs/:id" element={<JobDetailPage />} />
           <Route path="/companies" element={<CompaniesPage />} />
           <Route path="/outreach" element={<OutreachPage />} />

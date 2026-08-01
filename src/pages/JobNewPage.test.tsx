@@ -45,6 +45,36 @@ describe('JobNewPage', () => {
     ).toBeInTheDocument();
   });
 
+  it('pre-fills the form from query params (bookmarklet)', async () => {
+    render(
+      <QueryClientProvider client={makeClient()}>
+        <MemoryRouter
+          initialEntries={[
+            '/jobs/new?role=Senior%20Engineer&company=Acme%20Health&url=https%3A%2F%2Facme.health%2Fcareers%2Fse&location=Remote',
+          ]}
+        >
+          <Routes>
+            <Route path="/jobs/new" element={<JobNewPage />} />
+            <Route path="/jobs" element={<div>JOBS_LIST</div>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    expect(
+      screen.getByRole('textbox', { name: /role title/i }),
+    ).toHaveValue('Senior Engineer');
+    expect(
+      screen.getByRole('textbox', { name: /company/i }),
+    ).toHaveValue('Acme Health');
+    expect(
+      screen.getByRole('textbox', { name: /job posting url/i }),
+    ).toHaveValue('https://acme.health/careers/se');
+    expect(
+      screen.getByRole('textbox', { name: /location/i }),
+    ).toHaveValue('Remote');
+  });
+
   it('keeps submit disabled until the required fields are filled', async () => {
     renderPage();
 

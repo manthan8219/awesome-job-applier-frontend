@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -14,18 +14,21 @@ const labelCls =
 
 /**
  * Add a job you found anywhere (company careers page, LinkedIn, a friend's
- * tip) straight into the review queue — no engine run required.
+ * tip) straight into the review queue — no engine run required. The form
+ * pre-fills from ?role&company&url&location query params so the browser
+ * bookmarklet can send a job posting straight here.
  */
 export default function JobNewPage() {
   const navigate = useNavigate();
   const create = useCreateJob();
-  const [form, setForm] = useState<NewApplicationInput>({
-    role: '',
-    company: '',
-    url: '',
-    location: '',
-    remote: true,
-  });
+  const [params] = useSearchParams();
+  const [form, setForm] = useState<NewApplicationInput>(() => ({
+    role: params.get('role') ?? '',
+    company: params.get('company') ?? '',
+    url: params.get('url') ?? '',
+    location: params.get('location') ?? '',
+    remote: params.get('remote') !== 'false',
+  }));
   const patch = (p: Partial<NewApplicationInput>) =>
     setForm((f) => ({ ...f, ...p }));
 

@@ -74,9 +74,9 @@
 
 - [ ] Profession-aware onboarding (doctor/engineer/designer…)
 - [x] Pipeline kanban: apply → replied → interview → offer — `PipelineBoard` on Jobs (List | Board toggle), move cards via select, persists via the outcome API (KAN-41)
-- [x] Analytics: response rate, conversion, per-provider yield, CSV export — `/analytics` page with funnel + rate cards + provider table + export (KAN-42, PR ready)
-- [ ] Notifications: run summaries + daily digests via existing Discord/Telegram/email notifier
-- [ ] Browser bookmarklet / extension: "send this job to Nexus"
+- [x] Analytics: response rate, conversion, per-provider yield, CSV export — `/analytics` page with funnel + rate cards + provider table + export (KAN-42)
+- [ ] Notifications: run summaries + daily digests via existing Discord/Telegram/email notifier — *channel list + test-send shipped on Config (KAN-43); digests still TBD*
+- [x] Browser bookmarklet — `/bookmarklet` installer page; pre-fills `/jobs/new` from the page title/URL (KAN-45, PR ready)
 - [ ] Multi-user / auth + cloud sync (strategic decision)
 
 ### 🔧 Repo hygiene
