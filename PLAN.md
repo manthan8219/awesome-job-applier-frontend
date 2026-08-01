@@ -90,6 +90,12 @@
 - [x] **KAN-30** dismiss/archive — already shipped as KAN-31; verified (07-dismiss spec) and closed as duplicate
 - Every branch gated: lint, build, vitest (148–161), full Playwright suite (22 specs), contract (44), backend `go build/vet/test`. 7 PRs (#23–27 frontend, #20–21 backend) squash-merged to `main`.
 
+### ✅ Jira batch 2026-08-01 (response phase — KAN-19 + KAN-27)
+
+- [x] **KAN-19** per-application response-probability score — `/api/jobs` returns `responseScore`/`responseSummary` (fit × freshness × provider reply probability from the analytics funnel, backend PR #25); Jobs rows + JobDetailPage render the score + why (frontend PR #29); guided feed prefers the backend score
+- [x] **KAN-27** Response Center + A/B template testing — `/response` page (overall reply probability, funnel, per-provider reply probability, A/B variant results, recommendation cards) via frontend PR #30; outreach items taggable `Variant A/B` through `PUT /api/outreach/items/{id}/variant` (backend PR #26)
+- Gates: backend `go build/vet/test` green; frontend lint/build/vitest (224–226)/full e2e (28 specs)/contract (44) green on both branches and merged `main`.
+
 ### 🔧 Repo hygiene
 
 - [x] Push backend `feat/auto-apply-providers` branch — obsolete: its API fixes + `cmd/e2e-seed` all landed via proper PRs; the stale remote branch can be deleted
