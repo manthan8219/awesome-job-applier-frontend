@@ -109,6 +109,7 @@ function ContactRow({
         <Button
           variant="ghost"
           size="sm"
+          aria-label="Delete contact"
           loading={deleting}
           leftIcon={<Trash2 className="h-3.5 w-3.5" />}
           onClick={() => onDelete(c.id)}
