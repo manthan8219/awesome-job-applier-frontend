@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const STEPS = ['Welcome', 'Your profile', 'Launch search'];
+const STEPS = ['Welcome', 'Your profile', 'AI Assist', 'Launch search'];
 
 /** The numbered progress rail for the onboarding wizard. */
 export function StepRail({ active }: { active: number }) {

@@ -97,6 +97,16 @@ describe('OnboardingPage', () => {
     await screen.findByText('Go Engineer');
     fireEvent.click(screen.getByRole('button', { name: /show me jobs/i }));
 
+    // The dedicated AI step is the checkpoint before the dry run.
+    expect(
+      await screen.findByRole('heading', {
+        name: /boost your results with ai assist/i,
+      }),
+    ).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('button', { name: /start my first search/i }),
+    );
+
     expect(
       await screen.findByText('DASH', undefined, { timeout: 3000 }),
     ).toBeInTheDocument();
@@ -288,6 +298,12 @@ describe('OnboardingPage', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: /show me jobs/i }));
+    await screen.findByRole('heading', {
+      name: /boost your results with ai assist/i,
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: /start my first search/i }),
+    );
 
     await waitFor(() => {
       expect(saveConfig).toHaveBeenCalledWith(
@@ -299,5 +315,111 @@ describe('OnboardingPage', () => {
         }),
       );
     });
+  });
+
+  it('enables AI Assist from the dedicated step and then starts the dry run', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(emptyProfile());
+    vi.spyOn(api, 'suggestJobTitles').mockResolvedValue({
+      titles: ['Go Engineer'],
+      intent: 'Go Engineer',
+    });
+    vi.spyOn(api, 'getLLMStatus').mockResolvedValue({
+      reachable: true,
+      installed: ['llama3.2:latest', 'llama3.1:latest'],
+      machine: { ramGb: 16, cpu: 'Apple M4', goos: 'darwin', goarch: 'arm64' },
+      models: [
+        {
+          name: 'llama3.2:latest',
+          displayName: 'Llama 3.2',
+          minRamGb: 10,
+          fits: true,
+          installed: true,
+          best: true,
+          notes: '',
+        },
+      ],
+    } as Awaited<ReturnType<typeof api.getLLMStatus>>);
+    const saveConfig = vi
+      .spyOn(api, 'saveConfig')
+      .mockResolvedValue(emptyProfile());
+    const startRun = vi.spyOn(api, 'startRun').mockResolvedValue(undefined);
+
+    renderPage();
+
+    const input = await screen.findByLabelText(/what job do you want/i);
+    fireEvent.change(input, { target: { value: 'Go Engineer' } });
+    fireEvent.click(screen.getByRole('button', { name: /find my roles/i }));
+    await screen.findByText('Go Engineer');
+    fireEvent.click(screen.getByRole('button', { name: /show me jobs/i }));
+
+    // Dedicated AI step sits between profile and launch, and is honest.
+    expect(
+      await screen.findByRole('heading', {
+        name: /boost your results with ai assist/i,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/ai assist is off/i)).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /turn on ai assist/i }),
+    );
+
+    await waitFor(() => {
+      expect(saveConfig).toHaveBeenCalledWith(
+        expect.objectContaining({
+          aiAssist: true,
+          aiProvider: 'local',
+          localLLMModel: 'llama3.2:latest',
+        }),
+      );
+    });
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /start my first search/i }),
+    );
+
+    expect(
+      await screen.findByText('DASH', undefined, { timeout: 3000 }),
+    ).toBeInTheDocument();
+    expect(startRun).toHaveBeenCalledWith({ dryRun: true, autoApply: false });
+  });
+
+  it('skipping the AI step keeps AI off and still starts the dry run', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(emptyProfile());
+    vi.spyOn(api, 'suggestJobTitles').mockResolvedValue({
+      titles: ['Go Engineer'],
+      intent: 'Go Engineer',
+    });
+    const saveConfig = vi
+      .spyOn(api, 'saveConfig')
+      .mockResolvedValue(emptyProfile());
+    const startRun = vi.spyOn(api, 'startRun').mockResolvedValue(undefined);
+
+    renderPage();
+
+    const input = await screen.findByLabelText(/what job do you want/i);
+    fireEvent.change(input, { target: { value: 'Go Engineer' } });
+    fireEvent.click(screen.getByRole('button', { name: /find my roles/i }));
+    await screen.findByText('Go Engineer');
+    fireEvent.click(screen.getByRole('button', { name: /show me jobs/i }));
+
+    expect(
+      await screen.findByRole('heading', {
+        name: /boost your results with ai assist/i,
+      }),
+    ).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('button', { name: /start my first search/i }),
+    );
+
+    expect(
+      await screen.findByText('DASH', undefined, { timeout: 3000 }),
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(saveConfig).toHaveBeenCalledWith(
+        expect.objectContaining({ aiAssist: false }),
+      );
+    });
+    expect(startRun).toHaveBeenCalledWith({ dryRun: true, autoApply: false });
   });
 });

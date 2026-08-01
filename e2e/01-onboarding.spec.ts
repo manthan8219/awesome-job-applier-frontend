@@ -29,8 +29,17 @@ test('first-run wizard takes a fresh user through to the dashboard', async ({
   await page.getByLabel(/email/i).fill('ada@example.com');
   await page.getByRole('checkbox', { name: /i consent to nexus/i }).check();
 
+  // The wizard now asks for AI Assist before the dry run — it is skippable.
+  await page.getByRole('button', { name: /show me jobs/i }).click();
+  await expect(
+    page.getByRole('heading', { name: /boost your results with ai assist/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /turn on ai assist/i }),
+  ).toBeVisible();
+
   // Skip → dashboard (config now has the profile + consent saved).
-  await page.getByRole('button', { name: /skip/i }).click();
+  await page.getByRole('button', { name: /skip — go to the dashboard/i }).click();
   await expect(
     page.getByRole('heading', { name: /your job-hunt command center/i }),
   ).toBeVisible();

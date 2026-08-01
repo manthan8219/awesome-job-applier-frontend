@@ -27,6 +27,7 @@ const baseProps = {
   analyzing: false,
   analysisMsg: null,
   onAnalyze: vi.fn(),
+  aiEnabled: false,
   onShowJobs: vi.fn(),
   onSkip: vi.fn(),
   onBack: vi.fn(),
@@ -69,5 +70,45 @@ describe('ProfileStep profession badge', () => {
     );
 
     expect(screen.queryByText(/detected:/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('ProfileStep resume AI nudge', () => {
+  it('nudges to enable AI Assist when a resume is set and AI is off', () => {
+    render(
+      <ProfileStep
+        {...baseProps}
+        resumePath="/Users/me/resume.pdf"
+        aiEnabled={false}
+      />,
+    );
+
+    expect(
+      screen.getByText(/resume analysis is basic/i),
+    ).toBeInTheDocument();
+  });
+
+  it('hides the nudge when AI Assist is already on', () => {
+    render(
+      <ProfileStep
+        {...baseProps}
+        resumePath="/Users/me/resume.pdf"
+        aiEnabled={true}
+      />,
+    );
+
+    expect(
+      screen.queryByText(/resume analysis is basic/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it('hides the nudge when no resume path is set', () => {
+    render(
+      <ProfileStep {...baseProps} resumePath="" aiEnabled={false} />,
+    );
+
+    expect(
+      screen.queryByText(/resume analysis is basic/i),
+    ).not.toBeInTheDocument();
   });
 });

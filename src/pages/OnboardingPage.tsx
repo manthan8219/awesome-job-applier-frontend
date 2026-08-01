@@ -4,6 +4,7 @@ import Background from '@/components/Background';
 import Logo from '@/components/Logo';
 import { Card } from '@/components/ui/Card';
 import { PageLoader } from '@/components/ui/PageLoader';
+import { AiStep } from '@/components/onboarding/AiStep';
 import { LaunchStep } from '@/components/onboarding/LaunchStep';
 import { ProfileStep } from '@/components/onboarding/ProfileStep';
 import { StepRail } from '@/components/onboarding/StepRail';
@@ -17,9 +18,14 @@ import { contactPatch } from '@/lib/resume-backfill';
 import type { NexusConfig } from '@/types';
 import type { ResumeContact } from '@/types/resume';
 
-type Step = 'welcome' | 'profile' | 'launch';
+type Step = 'welcome' | 'profile' | 'ai' | 'launch';
 
-const STEP_INDEX: Record<Step, number> = { welcome: 0, profile: 1, launch: 2 };
+const STEP_INDEX: Record<Step, number> = {
+  welcome: 0,
+  profile: 1,
+  ai: 2,
+  launch: 3,
+};
 
 const LAUNCH_DELAY_MS = 700;
 
@@ -48,6 +54,10 @@ export default function OnboardingPage() {
   const [analysisMsg, setAnalysisMsg] = useState<string | null>(null);
   const [liveTitles, setLiveTitles] = useState<string[]>([]);
   const [aiOff, setAiOff] = useState(false);
+  const [llmStatus, setLlmStatus] = useState<{
+    reachable: boolean;
+    installed: string[];
+  } | null>(null);
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [fileSuggestions, setFileSuggestions] = useState<string[]>([]);
   const [resumeContact, setResumeContact] = useState<ResumeContact | null>(
@@ -169,6 +179,29 @@ export default function OnboardingPage() {
     setAnalyzing(false);
   }
 
+  // On the AI step, surface local-LLM readiness so the status pill is honest
+  // (re-fetched after "Turn on AI Assist" saves aiAssist and refetches config).
+  useEffect(() => {
+    if (step !== 'ai' || !existing?.aiAssist) {
+      setLlmStatus(null);
+      return;
+    }
+    let cancelled = false;
+    api
+      .getLLMStatus()
+      .then((s) => {
+        if (!cancelled) {
+          setLlmStatus({ reachable: s.reachable, installed: s.installed });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLlmStatus({ reachable: false, installed: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [step, existing?.aiAssist]);
+
   if (isLoading) return <PageLoader label="Loading your profile" />;
 
   const base: NexusConfig = existing ?? emptyProfile();
@@ -226,6 +259,12 @@ export default function OnboardingPage() {
     setIntent((prev) => prev.trim() || 'exploring');
     setSuggested([]);
     setStep('profile');
+  }
+
+  // Profile step → the short AI Assist ask before the dry run.
+  function handleProfileContinue() {
+    setError(null);
+    setStep('ai');
   }
 
   // Pick the best installed local model so one click actually turns AI on.
@@ -341,12 +380,27 @@ export default function OnboardingPage() {
               analyzing={analyzing}
               analysisMsg={analysisMsg}
               onAnalyze={handleAnalyzeResume}
-              onShowJobs={handleShowJobs}
+              aiEnabled={base.aiAssist}
+              onShowJobs={handleProfileContinue}
               onSkip={handleSkip}
               onBack={() => {
                 setError(null);
                 setStep('welcome');
               }}
+              saving={saving}
+              error={error}
+            />
+          )}
+          {step === 'ai' && (
+            <AiStep
+              aiEnabled={base.aiAssist}
+              aiProvider={base.aiProvider}
+              localLLMModel={base.localLLMModel}
+              llmStatus={llmStatus}
+              enablingAI={saving}
+              onEnableAI={handleEnableAI}
+              onStartSearch={handleShowJobs}
+              onSkip={handleSkip}
               saving={saving}
               error={error}
             />
