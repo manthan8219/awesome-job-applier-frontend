@@ -23,6 +23,21 @@ test('resume studio: skills persist through the real config API', async ({
   await expect(page.getByText(/saved/i).first()).toBeVisible();
 });
 
+test('resume studio: New resume step shows an honest readiness state without AI', async ({
+  page,
+}) => {
+  await ensureOnboarded();
+  await page.goto('/resume');
+  await page.getByRole('button', { name: /new resume/i }).click();
+  await expect(page.getByText(/step 3 — new resume/i)).toBeVisible();
+
+  // No AI keys in the E2E env → the checklist explains why Generate is locked.
+  await expect(page.getByText(/AI Assist on/i)).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /generate resume/i }),
+  ).toBeDisabled();
+});
+
 test('config page loads and save-now persists to the backend', async ({
   page,
 }) => {

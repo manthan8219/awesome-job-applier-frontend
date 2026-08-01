@@ -438,6 +438,14 @@ describe.skipIf(!backendAvailable)(
         });
       });
 
+      it('improveResume without AI Assist returns an honest 400', async () => {
+        // The contract backend has AI Assist off — the real handler must
+        // reject cleanly instead of returning the old fake stub shape.
+        await expect(
+          api.improveResume({ targetRole: 'Cardiologist', formats: ['markdown'] }),
+        ).rejects.toMatchObject({ status: 400 });
+      });
+
       it('work projects round-trip through the store', async () => {
         await api.saveResumeProject({
           id: 'contract-p1',
@@ -458,14 +466,6 @@ describe.skipIf(!backendAvailable)(
         await api.saveResumeSkills(['Go', 'SQL', 'Kubernetes']);
         const skills = await api.getResumeSkills();
         expect(skills).toEqual(expect.arrayContaining(['Go', 'Kubernetes']));
-      });
-
-      it('improveResume resolves (documents backend stub shape)', async () => {
-        const out = await api.improveResume({
-          targetRole: 'Engineer',
-          formats: ['markdown'],
-        });
-        expect(out).toBeDefined();
       });
 
       it('getResumeLibrary resolves to an array', async () => {
