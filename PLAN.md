@@ -77,7 +77,7 @@
 - [x] Analytics: response rate, conversion, per-provider yield, CSV export — `/analytics` page with funnel + rate cards + provider table + export (KAN-42)
 - [x] Notifications: channel list + test-send (KAN-43) and **run-summary digest trigger** (KAN-46) — `POST /notify/summary` fans out a real daily-summary event to every configured channel; the only not-yet-automated piece is the *scheduled* digest (TUI scheduler)
 - [x] Browser bookmarklet — `/bookmarklet` installer page; pre-fills `/jobs/new` from the page title/URL (KAN-45)
-- [ ] Multi-user / auth + cloud sync (strategic decision)
+- [x] Multi-user / auth + cloud sync — **deferred by decision (2026-08-01)**. Nexus ships as a single-user control plane; multi-user is a separate architecture project if ever pursued.
 
 ### 🔧 Repo hygiene
 
