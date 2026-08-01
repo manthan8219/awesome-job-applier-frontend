@@ -40,13 +40,15 @@ export default function DashboardPage() {
   const running = m?.engineStatus === 'running';
   const apps = useMemo(() => data ?? [], [data]);
 
-  // The backend Ready checklist doesn't cover AI Assist, so the dashboard
-  // appends an AI check derived from config. It is "recommended, not
-  // required": onboardingComplete comes from the backend and ignores it.
+  // The backend Ready checklist may or may not cover AI Assist yet. Derive a
+  // fallback check from config, but never duplicate one the API already
+  // sends. AI is "recommended, not required": onboardingComplete comes from
+  // the backend and ignores optional checks.
   const aiCheck = useMemo<ReadyCheck>(
     () => ({
       key: 'ai-assist',
       ok: !!cfg?.aiAssist,
+      optional: true,
       label: 'AI Assist on',
       hint: cfg?.aiAssist
         ? 'AI Assist on — fit-scoring & tailored answers'
@@ -54,15 +56,12 @@ export default function DashboardPage() {
     }),
     [cfg?.aiAssist],
   );
-  const checks = useMemo(
-    () => [...(m?.checks ?? []), aiCheck],
-    [m?.checks, aiCheck],
-  );
-
-  // Guide the user toward AI Assist once the profile basics are done — the
-  // exact moment it matters, without cluttering the earlier onboarding steps.
-  const showAiNudge =
-    !cfg?.aiAssist && m?.onboardingComplete && !running;
+  const checks = useMemo(() => {
+    const base = m?.checks ?? [];
+    return base.some((c) => c.key === 'ai-assist')
+      ? base
+      : [...base, aiCheck];
+  }, [m?.checks, aiCheck]);
 
   // Stable handlers so memoized children (ModeCard, StaleNudge) skip renders
   // when only the live feed changed.
@@ -120,9 +119,6 @@ export default function DashboardPage() {
 
       <RunSummaryBanner snapshot={m} />
       <NextAction text={m.nextAction} />
-      {showAiNudge && (
-        <NextAction text="Next: turn on AI Assist to unlock fit-scoring and tailored answers." />
-      )}
 
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
