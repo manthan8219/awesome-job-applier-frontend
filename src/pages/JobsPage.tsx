@@ -224,6 +224,12 @@ export default function JobsPage() {
             Add job
           </Button>
         </Link>
+        <Link
+          to="/bookmarklet"
+          className="text-xs text-slate-500 underline-offset-4 transition-colors hover:text-slate-300 hover:underline"
+        >
+          bookmarklet
+        </Link>
       </header>
 
       <div className="relative">
