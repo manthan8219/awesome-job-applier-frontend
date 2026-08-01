@@ -416,16 +416,16 @@ describe.skipIf(!backendAvailable)(
     });
 
     describe('job titles', () => {
-      it('rejects cleanly when AI Assist is off', async () => {
-        const err = await api
-          .suggestJobTitles('Cardiologist')
-          .catch((e: unknown) => e);
+      it('suggests offline titles for any profession without AI', async () => {
+        const res = await api.suggestJobTitles('Cardiologist, remote');
+        expect(res.titles.length).toBeGreaterThan(0);
+        expect(res.titles.join(' ')).toMatch(/cardiolog/i);
+      });
+
+      it('still requires an intent', async () => {
+        const err = await api.suggestJobTitles('').catch((e: unknown) => e);
         expect(err).toBeInstanceOf(Error);
-        // Note: check structurally — the error class comes from the dynamically
-        // re-imported module, so instanceof against the static import fails.
-        const e = err as { name?: string; status?: number };
-        expect(e.name).toBe('ApiError');
-        expect(e.status).toBe(400);
+        expect((err as { status?: number }).status).toBe(400);
       });
     });
 

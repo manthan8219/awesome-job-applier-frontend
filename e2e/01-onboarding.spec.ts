@@ -12,9 +12,10 @@ test('first-run wizard takes a fresh user through to the dashboard', async ({
     page.getByRole('heading', { name: /find your next job/i }),
   ).toBeVisible();
 
-  // Typing surfaces the honest AI-unavailable state (backend AI is off).
+  // Typing surfaces offline title suggestions — the profession catalog works
+  // for any role (doctor, engineer, …) without AI keys.
   await page.getByLabel(/what job do you want/i).fill('Cardiologist, remote');
-  await expect(page.getByText(/AI Assist is off/i)).toBeVisible({
+  await expect(page.getByText(/cardiologist/i).first()).toBeVisible({
     timeout: 8000,
   });
 
