@@ -432,6 +432,49 @@ describe.skipIf(!backendAvailable)(
         expect(typeof r.valid).toBe('boolean');
       });
 
+      it('getResumeTemplates returns the curated registry', async () => {
+        const templates = await api.getResumeTemplates();
+        expect(templates.length).toBeGreaterThanOrEqual(12);
+        const classic = templates.find((t) => t.id === 'classic');
+        expect(classic).toBeDefined();
+        expect(classic?.name).toBeTruthy();
+        expect(classic?.layout).toBeTruthy();
+        expect(classic?.sections.length).toBeGreaterThan(0);
+        expect(classic?.accentHex).toMatch(/^#/);
+
+        // The expanded registry exposes font + rail tokens where relevant.
+        const developer = templates.find((t) => t.id === 'developer');
+        expect(developer?.bodyFont).toBe('mono');
+        const split = templates.find((t) => t.id === 'split');
+        expect(split?.railSide).toBe('right');
+        // Header alignment + rule tokens drive the faithful gallery miniatures.
+        expect(classic?.headerAlign).toBe('left');
+        expect(classic?.showRule).toBe(true);
+        const executive = templates.find((t) => t.id === 'executive');
+        expect(executive?.headerAlign).toBe('center');
+        expect(executive?.showRule).toBe(false);
+        const ids = templates.map((t) => t.id);
+        for (const id of [
+          'classic', 'modern', 'sidebar', 'compact', 'executive', 'minimal',
+          'academic', 'developer', 'split', 'bold', 'monochrome', 'nordic',
+        ]) {
+          expect(ids).toContain(id);
+        }
+      });
+
+      it('template preview URLs stream a real PDF from the backend renderer', async () => {
+        // Exercise both renderers: single-column (classic) and sidebar (split).
+        for (const id of ['classic', 'split']) {
+          const res = await fetch(api.templatePreviewUrl(id), {
+            credentials: 'include',
+          });
+          expect(res.ok).toBe(true);
+          expect(res.headers.get('content-type')).toBe('application/pdf');
+          const buf = await res.arrayBuffer();
+          expect(new TextDecoder().decode(buf.slice(0, 5))).toBe('%PDF-');
+        }
+      });
+
       it('reanalyzeResume without a path returns a clean 400', async () => {
         await expect(api.reanalyzeResume()).rejects.toMatchObject({
           status: 400,

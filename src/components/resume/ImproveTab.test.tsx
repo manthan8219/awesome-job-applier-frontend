@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ImproveTab } from './ImproveTab';
 import { api } from '@/lib/api';
 import { makeConfig } from '@/test/fixtures';
+import { RESUME_TEMPLATES } from '@/types/resume';
 import type { ImproveOutput, WorkProject } from '@/types/resume';
 
 const project: WorkProject = {
@@ -33,6 +34,10 @@ function renderTab() {
   );
 }
 
+function mockTemplates() {
+  vi.spyOn(api, 'getResumeTemplates').mockResolvedValue(RESUME_TEMPLATES);
+}
+
 async function enableAndClickGenerate() {
   const button = await screen.findByRole('button', { name: /generate resume/i });
   await waitFor(() => expect(button).toBeEnabled());
@@ -50,6 +55,7 @@ describe('ImproveTab', () => {
     );
     vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
     vi.spyOn(api, 'improveResume').mockResolvedValue(validOutput);
+    mockTemplates();
 
     renderTab();
 
@@ -63,11 +69,68 @@ describe('ImproveTab', () => {
     ).toBeInTheDocument();
   });
 
+  it('shows the generated template name in the verdict', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
+    );
+    vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
+    vi.spyOn(api, 'improveResume').mockResolvedValue({
+      ...validOutput,
+      templateId: 'modern',
+      templateName: 'Modern',
+    });
+    mockTemplates();
+
+    renderTab();
+
+    await enableAndClickGenerate();
+
+    expect(await screen.findByText(/template: modern/i)).toBeInTheDocument();
+  });
+
+  it('renders template cards, defaults to Classic, and passes the selection', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
+    );
+    vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
+    const improve = vi.spyOn(api, 'improveResume').mockResolvedValue(validOutput);
+    mockTemplates();
+
+    renderTab();
+
+    // All templates are offered; Classic is selected by default.
+    // (/^classic/ so Monochrome's "quiet, classic" copy doesn't collide.)
+    const classic = await screen.findByRole('button', { name: /^classic/i });
+    expect(classic).toHaveAttribute('aria-pressed', 'true');
+    for (const name of ['Modern', 'Sidebar', 'Compact', 'Executive', 'Developer', 'Split']) {
+      expect(screen.getByRole('button', { name: new RegExp(name, 'i') })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      );
+    }
+
+    // Picking Sidebar flips the selection and is passed to the backend.
+    fireEvent.click(screen.getByRole('button', { name: /sidebar/i }));
+    expect(classic).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: /sidebar/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    await enableAndClickGenerate();
+    await waitFor(() =>
+      expect(improve).toHaveBeenCalledWith(
+        expect.objectContaining({ templateId: 'sidebar' }),
+      ),
+    );
+  });
+
   it('does not crash when the backend returns an incomplete shape', async () => {
     vi.spyOn(api, 'getConfig').mockResolvedValue(
       makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
     );
     vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
+    mockTemplates();
     // The current backend /resume/improve handler returns this stub shape.
     vi.spyOn(api, 'improveResume').mockResolvedValue({
       analysis: null,
@@ -90,6 +153,7 @@ describe('ImproveTab', () => {
       makeConfig({ aiAssist: false, resumePath: '' }),
     );
     vi.spyOn(api, 'getResumeProjects').mockResolvedValue([]);
+    mockTemplates();
 
     renderTab();
 

@@ -1,15 +1,35 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, CheckCircle2, Sparkles, Wand2 } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Columns,
+  ExternalLink,
+  FileText,
+  ShieldCheck,
+  Sparkles,
+  Wand2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SectionHeading } from './SectionHeading';
+import { TemplatePreview } from './TemplatePreview';
 import { useImproveResume } from '@/hooks/useImproveResume';
 import { useConfig } from '@/hooks/useConfig';
 import { useResumeProjects } from '@/hooks/useResumeProjects';
+import { useResumeTemplates } from '@/hooks/useResumeTemplates';
+import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { RESUME_FORMATS } from '@/types/resume';
-import type { ImproveOutput, ResumeFormat } from '@/types/resume';
+import {
+  RESUME_FORMATS,
+  RESUME_TEMPLATES,
+  TEMPLATE_DEFAULT_ID,
+} from '@/types/resume';
+import type {
+  ImproveOutput,
+  ResumeFormat,
+  ResumeTemplate,
+} from '@/types/resume';
 
 const inputCls =
   'w-full rounded-xl border border-white/5 bg-ink-950/60 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 transition-colors focus:border-neon-cyan/40 focus:outline-none';
@@ -88,6 +108,11 @@ function ResultPanel({ out }: { out: ImproveOutput }) {
           <p className="text-sm text-slate-200">{out.review.summary}</p>
         )}
         <p className="font-mono text-xs text-slate-500">Saved to {out.dir}</p>
+        {out.templateName && (
+          <p className="font-mono text-xs text-slate-500">
+            Template: {out.templateName}
+          </p>
+        )}
         {out.pdfNote && (
           <p className="font-mono text-xs text-neon-amber/80">
             PDF: {out.pdfNote}
@@ -103,11 +128,114 @@ function ResultPanel({ out }: { out: ImproveOutput }) {
     </motion.div>
   );
 }
+function TemplatePicker({
+  templates,
+  selected,
+  onSelect,
+  canPreview,
+}: {
+  templates: ResumeTemplate[];
+  selected: string;
+  onSelect: (id: string) => void;
+  canPreview: boolean;
+}) {
+  return (
+    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+      {templates.map((t) => {
+        const on = selected === t.id;
+        return (
+          <div
+            key={t.id}
+            className={cn(
+              'overflow-hidden rounded-xl border transition-all',
+              on
+                ? 'border-neon-cyan/50 bg-neon-cyan/10 shadow-glow-soft'
+                : 'border-white/5 bg-ink-800/40 hover:border-white/15',
+            )}
+          >
+            <button
+              type="button"
+              aria-pressed={on}
+              onClick={() => onSelect(t.id)}
+              className="flex w-full flex-col gap-2 p-3 text-left"
+            >
+              <TemplatePreview template={t} />
+              <span className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: t.accentHex }}
+                  />
+                  <span
+                    className={cn(
+                      'text-sm font-medium',
+                      on ? 'text-neon-cyan' : 'text-slate-200',
+                    )}
+                  >
+                    {t.name}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  {t.bodyFont === 'mono' ? (
+                    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                      mono
+                    </span>
+                  ) : t.bodyFont === 'serif' ? (
+                    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                      serif
+                    </span>
+                  ) : null}
+                  {t.layout === 'sidebar' ? (
+                    <Columns className="h-3.5 w-3.5" />
+                  ) : (
+                    <FileText className="h-3.5 w-3.5" />
+                  )}
+                  {t.onePage && (
+                    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                      1 page
+                    </span>
+                  )}
+                </span>
+              </span>
+              <span className="text-[11px] leading-snug text-slate-500">
+                {t.description}
+              </span>
+              <span className="flex items-center gap-1 text-[10px] text-slate-500">
+                <ShieldCheck className="h-3 w-3 shrink-0" />
+                {t.atsNote}
+              </span>
+            </button>
+            {canPreview && (
+              <a
+                href={api.templatePreviewUrl(t.id)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 border-t border-white/5 px-3 py-1.5 text-[10px] font-medium text-neon-cyan/80 transition-colors hover:bg-white/5 hover:text-neon-cyan"
+              >
+                <ExternalLink className="h-3 w-3 shrink-0" />
+                View sample PDF
+              </a>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ImproveTab() {
   const { data: cfg } = useConfig();
   const { data: projects } = useResumeProjects();
+  const { data: apiTemplates } = useResumeTemplates();
   const improve = useImproveResume();
 
+  // Fall back to the static registry when the API is unreachable/empty.
+  const templates: ResumeTemplate[] =
+    apiTemplates && apiTemplates.length > 0 ? apiTemplates : RESUME_TEMPLATES;
+  // "View sample PDF" needs the backend renderer — only offer it when the
+  // registry came from the API (the offline fallback has no PDF server).
+  const templatesFromApi = Boolean(apiTemplates && apiTemplates.length > 0);
+  const [templateId, setTemplateId] = useState<string>(TEMPLATE_DEFAULT_ID);
   const [formats, setFormats] = useState<Set<ResumeFormat>>(
     new Set<ResumeFormat>(['markdown', 'latex', 'pdf']),
   );
@@ -164,6 +292,20 @@ export function ImproveTab() {
             </li>
           ))}
         </ul>
+      </Card>
+
+      <Card className="space-y-4 p-5">
+        <SectionHeading>Template</SectionHeading>
+        <p className="text-xs text-slate-500">
+          Choose the design your improved resume is written into. The AI follows
+          the template's section order, layout, and page constraints.
+        </p>
+        <TemplatePicker
+          templates={templates}
+          selected={templateId}
+          onSelect={setTemplateId}
+          canPreview={templatesFromApi}
+        />
       </Card>
 
       <Card className="space-y-4 p-5">
@@ -225,6 +367,7 @@ export function ImproveTab() {
               improve.mutate({
                 targetRole: targetRole.trim(),
                 formats: [...formats],
+                templateId,
               })
             }
           >

@@ -70,6 +70,16 @@
 - [x] Real resume improve handler — `/resume/improve` runs `GenerateImproved` (profile + workcontext + skills), honest 400s without AI/resume, returns the `{previewMD, dir, review}` payload (KAN-40, PRs ready)
 - [x] Offline (no-AI) job-title suggestions — profession catalog so onboarding works without API keys (KAN-37)
 
+### ✅ Resume template registry (choose a design, fit the CV into it)
+
+- [x] **Backend template registry** — `internal/resume/template.go`: machine-readable `Template` manifests (id/name/layout/sections/accent/ATS note/one-page/font/rail-side) for **12 curated designs** — Classic, Modern, Sidebar, Compact, Executive (serif), Minimal, Academic (education-first serif), Developer (mono), Split (right rail), Bold, Monochrome (serif), Nordic; `GetTemplate` defaults to Classic (TUI/tailor callers unchanged)
+- [x] **Template-aware renderers** — `RenderMarkdownFor` / `RenderLaTeXFor` / `RenderNativePDFFor` follow each manifest (section order, two-column rail on the declared side for Sidebar/Split, accent colors, margins/fonts for Compact, serif/mono body fonts for Executive/Academic/Developer/Monochrome); old `RenderMarkdown`/`RenderLaTeX`/`EnsurePDF`/`RenderNativePDF` kept as Classic wrappers
+- [x] **Template-aware AI polish loop** — the creator prompt receives the selected template's sections/order/layout/one-page constraint (`polishTemplateBlock`) and the assessor judges the template-rendered Markdown, so content is written to fit the design
+- [x] **API** — `GET /api/resume/templates` (registry) + `POST /api/resume/improve` accepts `templateId` (400 on unknown) and returns `templateId`/`templateName`; version library records the template
+- [x] **Frontend** — `ResumeTemplate` types + offline `RESUME_TEMPLATES` fallback (12), `getResumeTemplates()` client + `useResumeTemplates` hook, and a **template gallery** on the New-resume step: responsive 3-column grid of cards with a mini layout preview (header bar, section lines, rail position), accent dot, font badge, layout icon, ATS note and 1-page badge; selection is passed with the generate call
+- [x] **Real template previews (choose a design by seeing it)** — backend `GET /api/resume/templates/{id}/preview.pdf` renders a realistic sample persona (`resume.SampleResume()`) through the exact same PDF engine real resumes use (400 on unknown id); the manifest now carries `headerAlign`/`showRule` tokens (explicit `showRule:false` so no-rule designs round-trip), and the gallery cards render an A4-proportioned **miniature sample resume** — real name/headline/sections/bullets in the template's fonts, accent, header alignment, rule and rail side — plus a per-card "View sample PDF" link to the real backend-rendered document
+- [x] Gates: backend `go build/vet/test` (68 pkgs) green; frontend lint/build green; vitest (250) incl. contract tests for `/resume/templates` tokens + the preview-PDF endpoint; resume e2e spec asserts the sample-persona gallery + preview link against the real backend
+
 ### 🔵 Product leaps (advisory)
 
 - [x] Profession-aware onboarding (doctor/engineer/designer…) — `SuggestProfession` (backend) + detected-profession badge in the onboarding wizard (KAN-44)

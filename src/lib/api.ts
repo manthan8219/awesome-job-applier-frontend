@@ -18,6 +18,7 @@ import type {
   ImproveOutput,
   ImproveRequest,
   ResumeAnalysis,
+  ResumeTemplate,
   WorkProject,
 } from '@/types/resume';
 import type { UsageSnapshot } from '@/types/usage';
@@ -305,6 +306,19 @@ export const api = {
 
   async getResumeAnalysis(): Promise<ResumeAnalysis> {
     return request<ResumeAnalysis>('/resume/analyze');
+  },
+
+  async getResumeTemplates(): Promise<ResumeTemplate[]> {
+    return request<ResumeTemplate[]>('/resume/templates');
+  },
+
+  /**
+   * Absolute URL of the real backend-rendered sample PDF for a template.
+   * Opens in a new tab so the user can judge the actual document, not a
+   * miniature. Returns 400 for an unknown template id.
+   */
+  templatePreviewUrl(templateId: string): string {
+    return `${BASE_URL}/resume/templates/${encodeURIComponent(templateId)}/preview.pdf`;
   },
 
   async reanalyzeResume(path?: string): Promise<ResumeAnalysis> {

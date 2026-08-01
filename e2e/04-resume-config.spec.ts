@@ -31,6 +31,22 @@ test('resume studio: New resume step shows an honest readiness state without AI'
   await page.getByRole('button', { name: /new resume/i }).click();
   await expect(page.getByText(/step 3 — new resume/i)).toBeVisible();
 
+  // Template picker comes from the real backend registry (12 curated designs).
+  await expect(page.getByText(/choose the design/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: /^classic/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /sidebar/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /developer/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /split/i })).toBeVisible();
+
+  // The gallery shows real sample resumes (not abstract bars), and every card
+  // links to the real backend-rendered PDF for that template.
+  await expect(page.getByText(/maya okonkwo/i).first()).toBeVisible();
+  const sampleLink = page.getByRole('link', { name: /view sample pdf/i }).first();
+  await expect(sampleLink).toHaveAttribute(
+    'href',
+    /\/resume\/templates\/classic\/preview\.pdf$/,
+  );
+
   // No AI keys in the E2E env → the checklist explains why Generate is locked.
   await expect(page.getByText(/AI Assist on/i)).toBeVisible();
   await expect(
