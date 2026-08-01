@@ -485,6 +485,27 @@ describe.skipIf(!backendAvailable)(
         }
       });
 
+      it('previewTemplateWithData renders a user resume doc into a real PDF', async () => {
+        const blob = await api.previewTemplateWithData('classic', {
+          fullName: 'Ada Lovelace',
+          headline: 'Senior Backend Engineer',
+          summary: 'Backend engineer shipping distributed systems at scale.',
+          skills: ['Go', 'PostgreSQL', 'Kubernetes'],
+          experience: [
+            {
+              title: 'Senior Engineer',
+              org: 'Acme',
+              period: '2021 — present',
+              bullets: ['Cut p99 checkout latency by 40%.'],
+            },
+          ],
+          education: ['B.Tech, University, 2015'],
+        });
+        expect(blob.type).toBe('application/pdf');
+        const buf = await blob.arrayBuffer();
+        expect(new TextDecoder().decode(buf.slice(0, 5))).toBe('%PDF-');
+      });
+
       it('reanalyzeResume without a path returns a clean 400', async () => {
         await expect(api.reanalyzeResume()).rejects.toMatchObject({
           status: 400,

@@ -90,6 +90,14 @@
 - [x] **Frontend** — `ResumeSpaceBudget`/`ResumeFit` types + offline fallback budgets for all 12 templates; template cards show capacity chips (`≤5 roles · ≤4 bullets · ≤12 skills · ≤2 edu`); the result panel shows a **Fit report** (fit score, rendered pages, content lines, trimmed-sections + warnings)
 - [x] Gates: backend `go build/vet/test` green (new `plan_test.go` + page-count + API-shape tests); frontend lint/build green; vitest (252) incl. contract assertions on live budgets; resume e2e asserts capacity chips from the real backend
 
+### ✅ PDF preview of generated + your data (see the resume, not the source)
+
+- [x] **Library PDF stream** — `GetVersion(id)` in `library.go` + `GET /api/resume/library/{id}/pdf` streams a generated resume's PDF (`application/pdf`, 404 on unknown); the improve response now returns `pdfId` so the UI can point at it
+- [x] **Preview with my data** — `POST /api/resume/templates/{id}/preview` renders a user-supplied resume document (`ImprovedDoc` JSON) into any template with the real PDF engine — no AI, fully deterministic (400 for unknown template or an empty doc); `RenderTemplatePreviewPDFFor(doc, tpl)` powers it
+- [x] **Inline PDF pane** — the result panel now defaults to an inline `<object type="application/pdf">` of the generated resume with a PDF/Markdown toggle (markdown stays behind a tab for editing) and an "open in new tab" link; old backends without `pdfId` fall back to markdown
+- [x] **Frontend preview-with-data action** — the template gallery has a "Preview with my data" button: assembles `PreviewResumeDoc` from the profile analysis (name, summary, skills, suitable roles) + work projects (roles/bullets) + target role, POSTs it, and shows the rendered PDF inline (blob URL) — lets the user judge their content in a design before spending AI credits
+- [x] Gates: backend `go build/vet/test` green (library round-trip, preview-with-data + library-PDF API tests in isolated $HOME); frontend lint/build green; vitest (incl. inline-PDF + preview-with-data component tests, live contract for `previewTemplateWithData`); resume e2e asserts the button against the real backend
+
 ### 🔵 Product leaps (advisory)
 
 - [x] Profession-aware onboarding (doctor/engineer/designer…) — `SuggestProfession` (backend) + detected-profession badge in the onboarding wizard (KAN-44)

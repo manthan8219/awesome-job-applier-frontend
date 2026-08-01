@@ -63,11 +63,33 @@ export interface ImproveOutput {
     qualityScore: number;
   };
   pdfNote?: string;
+  /** Library id of the generated PDF (optional — older backends omit it). */
+  pdfId?: string;
   /** Template that rendered this resume (optional — older backends omit it). */
   templateId?: string;
   templateName?: string;
   /** Content→template fit report (optional — older backends omit it). */
   fit?: ResumeFit;
+}
+
+/**
+ * A resume document the user can preview in a template before generating
+ * (mirrors resume.ImprovedDoc's web-shaped subset). Assembled from the current
+ * profile analysis + work projects + skills and POSTed to the backend, which
+ * renders it deterministically with the real PDF engine — no AI involved.
+ */
+export interface PreviewResumeDoc {
+  fullName?: string;
+  headline?: string;
+  summary?: string;
+  skills?: string[];
+  experience?: {
+    title?: string;
+    org?: string;
+    period?: string;
+    bullets?: string[];
+  }[];
+  education?: string[];
 }
 
 /**

@@ -42,6 +42,11 @@ test('resume studio: New resume step shows an honest readiness state without AI'
   await expect(page.getByText(/≤5 roles/i).first()).toBeVisible();
   await expect(page.getByText(/≤3 bullets/i).first()).toBeVisible();
 
+  // "Preview with my data" renders the user's current data into the template.
+  await expect(
+    page.getByRole('button', { name: /preview with my data/i }),
+  ).toBeVisible();
+
   // The gallery shows real sample resumes (not abstract bars), and every card
   // links to the real backend-rendered PDF for that template.
   await expect(page.getByText(/maya okonkwo/i).first()).toBeVisible();

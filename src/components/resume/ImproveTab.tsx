@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
   CheckCircle2,
   Columns,
   ExternalLink,
+  Eye,
   FileText,
   Scissors,
   ShieldCheck,
@@ -17,6 +18,7 @@ import { SectionHeading } from './SectionHeading';
 import { TemplatePreview } from './TemplatePreview';
 import { useImproveResume } from '@/hooks/useImproveResume';
 import { useConfig } from '@/hooks/useConfig';
+import { useResumeAnalysis } from '@/hooks/useResumeAnalysis';
 import { useResumeProjects } from '@/hooks/useResumeProjects';
 import { useResumeTemplates } from '@/hooks/useResumeTemplates';
 import { api } from '@/lib/api';
@@ -28,6 +30,7 @@ import {
 } from '@/types/resume';
 import type {
   ImproveOutput,
+  PreviewResumeDoc,
   ResumeFit,
   ResumeFormat,
   ResumeSpaceBudget,
@@ -176,6 +179,8 @@ function FitReport({ fit }: { fit: ResumeFit }) {
 }
 
 function ResultPanel({ out }: { out: ImproveOutput }) {
+  const [view, setView] = useState<'pdf' | 'markdown'>('pdf');
+  const pdfUrl = out.pdfId ? api.resumePdfUrl(out.pdfId) : null;
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -213,10 +218,75 @@ function ResultPanel({ out }: { out: ImproveOutput }) {
       </Card>
       {out.fit && <FitReport fit={out.fit} />}
       <Card className="space-y-3 p-5">
-        <SectionHeading>Preview</SectionHeading>
-        <pre className="no-scrollbar max-h-[28rem] overflow-auto rounded-xl border border-white/5 bg-ink-950/80 p-4 font-mono text-xs leading-relaxed text-slate-300">
-          {out.previewMD}
-        </pre>
+        <div className="flex items-center justify-between gap-2">
+          <SectionHeading>Preview</SectionHeading>
+          <div className="flex overflow-hidden rounded-lg border border-white/10">
+            <button
+              type="button"
+              onClick={() => setView('pdf')}
+              disabled={!pdfUrl}
+              aria-pressed={view === 'pdf'}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium transition-colors',
+                view === 'pdf'
+                  ? 'bg-neon-cyan/15 text-neon-cyan'
+                  : 'bg-transparent text-slate-400 hover:text-slate-200',
+                !pdfUrl && 'cursor-not-allowed opacity-40',
+              )}
+            >
+              PDF
+            </button>
+            <button
+              type="button"
+              onClick={() => setView('markdown')}
+              aria-pressed={view === 'markdown'}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium transition-colors',
+                view === 'markdown'
+                  ? 'bg-neon-cyan/15 text-neon-cyan'
+                  : 'bg-transparent text-slate-400 hover:text-slate-200',
+              )}
+            >
+              Markdown
+            </button>
+          </div>
+        </div>
+        {view === 'pdf' && pdfUrl ? (
+          <div className="flex flex-col gap-2">
+            <object
+              data={pdfUrl}
+              type="application/pdf"
+              aria-label="Generated resume PDF"
+              className="h-[34rem] w-full rounded-xl border border-white/5 bg-white"
+            >
+              <p className="p-4 text-sm text-slate-400">
+                Your browser can't show PDFs inline —{' '}
+                <a
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-neon-cyan underline"
+                >
+                  open the PDF
+                </a>
+                .
+              </p>
+            </object>
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 self-start text-xs font-medium text-neon-cyan/80 transition-colors hover:text-neon-cyan"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Open PDF in a new tab
+            </a>
+          </div>
+        ) : (
+          <pre className="no-scrollbar max-h-[28rem] overflow-auto rounded-xl border border-white/5 bg-ink-950/80 p-4 font-mono text-xs leading-relaxed text-slate-300">
+            {out.previewMD}
+          </pre>
+        )}
       </Card>
     </motion.div>
   );
@@ -321,6 +391,7 @@ export function ImproveTab() {
   const { data: cfg } = useConfig();
   const { data: projects } = useResumeProjects();
   const { data: apiTemplates } = useResumeTemplates();
+  const { data: analysis } = useResumeAnalysis();
   const improve = useImproveResume();
 
   // Fall back to the static registry when the API is unreachable/empty.
@@ -334,6 +405,61 @@ export function ImproveTab() {
     new Set<ResumeFormat>(['markdown', 'latex', 'pdf']),
   );
   const [targetRole, setTargetRole] = useState('');
+
+  // "Preview with my data" — renders the user's current profile + projects +
+  // skills into the selected template without running the AI pipeline.
+  const [myDataUrl, setMyDataUrl] = useState<string | null>(null);
+  const [myDataLoading, setMyDataLoading] = useState(false);
+  const [myDataError, setMyDataError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Revoke the blob URL when it changes or the tab unmounts.
+    return () => {
+      if (myDataUrl) URL.revokeObjectURL(myDataUrl);
+    };
+  }, [myDataUrl]);
+
+  function buildPreviewDoc(): PreviewResumeDoc {
+    const profile = analysis?.profile ?? null;
+    const contact = analysis?.contact ?? null;
+    const name = [contact?.firstName, contact?.lastName]
+      .filter(Boolean)
+      .join(' ');
+    const roles = profile?.suitableRoles ?? [];
+    const experience = (projects ?? []).map((p) => ({
+      title: p.role || 'Role',
+      org: p.name,
+      period: p.period,
+      bullets: p.summary
+        .split('\n')
+        .map((l) => l.replace(/^[-•]\s*/, '').trim())
+        .filter(Boolean),
+    }));
+    return {
+      fullName: name || undefined,
+      headline: targetRole.trim() || roles[0] || undefined,
+      summary: profile?.summary || undefined,
+      skills: profile?.skills?.length ? profile.skills : undefined,
+      experience: experience.length ? experience : undefined,
+    };
+  }
+
+  async function previewWithMyData() {
+    setMyDataLoading(true);
+    setMyDataError(null);
+    setMyDataUrl(null);
+    try {
+      const blob = await api.previewTemplateWithData(
+        templateId,
+        buildPreviewDoc(),
+      );
+      setMyDataUrl(URL.createObjectURL(blob));
+    } catch (err) {
+      setMyDataError((err as Error)?.message ?? 'preview failed');
+    } finally {
+      setMyDataLoading(false);
+    }
+  }
 
   const aiOn = Boolean(cfg?.aiAssist);
   const hasResume = Boolean(cfg?.resumePath?.trim());
@@ -400,6 +526,54 @@ export function ImproveTab() {
           onSelect={setTemplateId}
           canPreview={templatesFromApi}
         />
+        <div className="flex flex-col gap-2 border-t border-white/5 pt-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              leftIcon={<Eye className="h-4 w-4" />}
+              loading={myDataLoading}
+              disabled={
+                !templatesFromApi || projectCount === 0 || improve.isPending
+              }
+              onClick={previewWithMyData}
+            >
+              Preview with my data
+            </Button>
+            <p className="max-w-md text-xs text-slate-500">
+              Renders your current profile + {projectCount} project
+              {projectCount === 1 ? '' : 's'} in{' '}
+              {templates.find((t) => t.id === templateId)?.name ?? 'the selected template'}{' '}
+              with the real PDF engine — no AI credits used.
+            </p>
+          </div>
+          {myDataError && (
+            <p className="text-xs text-red-400">
+              Preview failed: {myDataError}
+            </p>
+          )}
+          {myDataUrl && (
+            <div className="flex flex-col gap-2">
+              <object
+                data={myDataUrl}
+                type="application/pdf"
+                aria-label="Your resume preview"
+                className="h-[30rem] w-full rounded-xl border border-white/5 bg-white"
+              >
+                <p className="p-4 text-sm text-slate-400">
+                  Your browser can't show PDFs inline —{' '}
+                  <a
+                    href={myDataUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-neon-cyan underline"
+                  >
+                    open the preview
+                  </a>
+                  .
+                </p>
+              </object>
+            </div>
+          )}
+        </div>
       </Card>
 
       <Card className="space-y-4 p-5">
