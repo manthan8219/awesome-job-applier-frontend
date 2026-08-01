@@ -4,6 +4,7 @@ import {
   Building2,
   FileText,
   LayoutDashboard,
+  Radar,
   ScrollText,
   Send,
   Settings,
@@ -36,6 +37,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/contacts', label: 'Contacts', icon: Users },
   { to: '/logs', label: 'Logs', icon: ScrollText },
   { to: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { to: '/response', label: 'Response', icon: Radar },
 ];
 
 /** Work-type options (mirrors the TUI's wtOptions). */
