@@ -94,6 +94,15 @@ export function ResumeUpload({
         </div>
       ) : (
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Upload resume"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              fileRef.current?.click();
+            }
+          }}
           onDragOver={(e) => {
             e.preventDefault();
             setDragOver(true);
@@ -117,6 +126,7 @@ export function ResumeUpload({
             type="file"
             accept=".pdf,application/pdf"
             className="hidden"
+            aria-label="Upload resume"
             onChange={(e) => void handleFile(e.target.files?.[0] ?? undefined)}
           />
           {uploading ? (

@@ -7,6 +7,8 @@ interface TagInputProps {
   onTagsChange: (tags: string[]) => void;
   placeholder?: string;
   className?: string;
+  /** Accessible name for the inner text input */
+  ariaLabel?: string;
   /** When provided, pressing Enter shows the input value as a suggestion chip */
   addOnEnter?: boolean;
   /** When non-empty, shown as a dropdown below the input */
@@ -19,6 +21,7 @@ export function TagInput({
   onTagsChange,
   placeholder = 'Type and press Enter…',
   className,
+  ariaLabel,
   suggestions = [],
   onInputChange,
 }: TagInputProps) {
@@ -85,6 +88,7 @@ export function TagInput({
           ref={inputRef}
           type="text"
           value={input}
+          aria-label={ariaLabel}
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => setFocused(true)}

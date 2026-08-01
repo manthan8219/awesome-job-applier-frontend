@@ -76,6 +76,34 @@ describe('ConfigPage', () => {
     );
   });
 
+  it('associates field labels with their inputs (a11y)', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(makeConfig());
+    vi.spyOn(api, 'saveConfig').mockResolvedValue(makeConfig());
+
+    renderPage();
+
+    // Previously these labels were not linked to their inputs, so the
+    // accessible name was missing. Now getByLabelText resolves the input.
+    const firstName = await screen.findByLabelText(/first name/i);
+    expect(firstName.tagName).toBe('INPUT');
+    const email = screen.getByLabelText(/^email$/i);
+    expect(email.tagName).toBe('INPUT');
+    const targetTitles = screen.getByLabelText(/target job titles/i);
+    expect(targetTitles.tagName).toBe('INPUT');
+  });
+
+  it('renders toggles as switches with aria-checked (a11y)', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(makeConfig());
+    vi.spyOn(api, 'saveConfig').mockResolvedValue(makeConfig());
+
+    renderPage();
+
+    const dailyRun = await screen.findByRole('switch', {
+      name: /run a daily dry-run search/i,
+    });
+    expect(dailyRun).toHaveAttribute('aria-checked', 'false');
+  });
+
   it('saves on the Save now button and shows the success indicator', async () => {
     vi.spyOn(api, 'getConfig').mockResolvedValue(makeConfig());
     const saveConfig = vi

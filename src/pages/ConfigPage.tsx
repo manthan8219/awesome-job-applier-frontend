@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   CheckCircle2,
   Circle,
@@ -51,12 +51,17 @@ function TextField({
   placeholder?: string;
   className?: string;
 }) {
+  const id = useId();
   return (
     <div className={cn('space-y-1', className)}>
-      <label className="block text-xs font-medium uppercase tracking-wider text-slate-500">
+      <label
+        htmlFor={id}
+        className="block text-xs font-medium uppercase tracking-wider text-slate-500"
+      >
         {label}
       </label>
       <input
+        id={id}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -80,12 +85,17 @@ function NumberField({
   min?: number;
   className?: string;
 }) {
+  const id = useId();
   return (
     <div className={cn('space-y-1', className)}>
-      <label className="block text-xs font-medium uppercase tracking-wider text-slate-500">
+      <label
+        htmlFor={id}
+        className="block text-xs font-medium uppercase tracking-wider text-slate-500"
+      >
         {label}
       </label>
       <input
+        id={id}
         type="number"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
@@ -111,12 +121,17 @@ function TextareaField({
   rows?: number;
   className?: string;
 }) {
+  const id = useId();
   return (
     <div className={cn('space-y-1', className)}>
-      <label className="block text-xs font-medium uppercase tracking-wider text-slate-500">
+      <label
+        htmlFor={id}
+        className="block text-xs font-medium uppercase tracking-wider text-slate-500"
+      >
         {label}
       </label>
       <textarea
+        id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
@@ -149,6 +164,9 @@ function Toggle({
       <span className="text-sm font-medium text-slate-200">{label}</span>
       <button
         type="button"
+        role="switch"
+        aria-checked={value}
+        aria-label={label}
         onClick={() => onChange(!value)}
         className={cn(
           'relative h-7 w-12 shrink-0 rounded-full transition-colors',
@@ -186,11 +204,16 @@ function Select({
       <label className="block text-xs font-medium uppercase tracking-wider text-slate-500">
         {label}
       </label>
-      <div className="flex flex-wrap gap-1.5">
+      <div
+        role="group"
+        aria-label={label}
+        className="flex flex-wrap gap-1.5"
+      >
         {options.map((opt) => (
           <button
             key={opt}
             type="button"
+            aria-pressed={value === opt}
             onClick={() => onChange(opt)}
             className={cn(
               'rounded-lg px-3 py-1.5 text-xs capitalize transition-all',
@@ -383,6 +406,7 @@ function computeMissing(f: Partial<NexusConfig>): string[] {
 export default function ConfigPage() {
   const { data: loaded, isLoading } = useConfig();
   const update = useUpdateConfig();
+  const runTimeId = useId();
 
   const [f, setF] = useState<Partial<NexusConfig>>({});
   const [saved, setSaved] = useState(false);
@@ -709,9 +733,9 @@ export default function ConfigPage() {
       <Card className="space-y-4 p-5">
         <SectionHeading>Job Preferences</SectionHeading>
         <div className="space-y-1">
-          <label className="block text-xs font-medium uppercase tracking-wider text-slate-500">
+          <span className="block text-xs font-medium uppercase tracking-wider text-slate-500">
             Target Job Titles (press Enter to add)
-          </label>
+          </span>
           <TagInput
             tags={
               f.targetJobTitles
@@ -723,6 +747,7 @@ export default function ConfigPage() {
             }
             onTagsChange={(tags) => patch({ targetJobTitles: tags.join(', ') })}
             placeholder="Backend Engineer, Platform Engineer"
+            ariaLabel="Target job titles"
             suggestions={titleSuggestions}
             onInputChange={() => setTitleSuggestions([])}
           />
@@ -767,9 +792,9 @@ export default function ConfigPage() {
           onChange={(v) => patch({ workType: v })}
         />
         <div className="space-y-1">
-          <label className="block text-xs font-medium uppercase tracking-wider text-slate-500">
+          <span className="block text-xs font-medium uppercase tracking-wider text-slate-500">
             Target Locations (press Enter to add)
-          </label>
+          </span>
           <TagInput
             tags={
               f.targetLocations
@@ -781,6 +806,7 @@ export default function ConfigPage() {
             }
             onTagsChange={(tags) => patch({ targetLocations: tags.join(', ') })}
             placeholder="San Francisco, Remote, Worldwide"
+            ariaLabel="Target locations"
             suggestions={locSuggestions}
             onInputChange={handleLocationInput}
           />
@@ -1083,10 +1109,14 @@ export default function ConfigPage() {
         />
         {f.dailyRunEnabled && (
           <div className="space-y-1">
-            <label className="block text-xs font-medium uppercase tracking-wider text-slate-500">
+            <label
+              htmlFor={runTimeId}
+              className="block text-xs font-medium uppercase tracking-wider text-slate-500"
+            >
               Run time
             </label>
             <input
+              id={runTimeId}
               type="time"
               value={f.dailyRunAt ?? '09:00'}
               onChange={(e) => patch({ dailyRunAt: e.target.value })}
