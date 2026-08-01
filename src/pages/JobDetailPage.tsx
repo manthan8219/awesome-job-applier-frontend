@@ -1,14 +1,24 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ExternalLink, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Check, ExternalLink, RotateCcw, Send } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DotBadge } from '@/components/ui/DotBadge';
 import { PageLoader } from '@/components/ui/PageLoader';
+import { ConfirmApplyDialog } from '@/components/review/ConfirmApplyDialog';
 import { useApplications } from '@/hooks/useApplications';
+import { useApplySelected } from '@/hooks/useApplySelected';
+import { useConfig } from '@/hooks/useConfig';
+import { useSetApplicationApproved } from '@/hooks/useSetApplicationApproved';
 import { useSetOutcome } from '@/hooks/useSetOutcome';
+import { useUpdateConfig } from '@/hooks/useUpdateConfig';
 import { APP_STATUS_META, OUTCOME_CYCLE, OUTCOME_META } from '@/constants';
-import { nextOutcome } from '@/lib/applications';
+import {
+  appliedTodayCount,
+  isQueueStatus,
+  nextOutcome,
+} from '@/lib/applications';
 import { formatDateTime, formatRelativeTime } from '@/lib/utils';
 import type { Application } from '@/types';
 
@@ -32,6 +42,12 @@ export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: apps, isLoading } = useApplications('');
   const setOutcome = useSetOutcome();
+  const setApproved = useSetApplicationApproved();
+  const applySelected = useApplySelected();
+  const { data: cfg } = useConfig();
+  const saveConfig = useUpdateConfig();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
 
   const app = apps?.find((a) => String(a.id) === id);
 
@@ -52,6 +68,25 @@ export default function JobDetailPage() {
   const s = APP_STATUS_META[app.status];
   const o = OUTCOME_META[app.outcome];
   const isApplied = app.status === 'applied';
+  const isQueue = isQueueStatus(app.status);
+  const appId = app.id;
+  const remainingToday = Math.max(
+    0,
+    (cfg?.maxAppsPerDay ?? 25) - appliedTodayCount(apps ?? []),
+  );
+
+  async function handleConfirm(giveConsent: boolean) {
+    setApplyError(null);
+    try {
+      if (giveConsent && cfg) {
+        await saveConfig.mutateAsync({ ...cfg, applyConsent: true });
+      }
+      await applySelected.mutateAsync([appId]);
+      setDialogOpen(false);
+    } catch (e) {
+      setApplyError(e instanceof Error ? e.message : 'Apply failed.');
+    }
+  }
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-5">
@@ -130,6 +165,29 @@ export default function JobDetailPage() {
                 Open job posting
               </Button>
             </a>
+            {isQueue && (
+              <>
+                <Button
+                  variant={app.approved ? 'secondary' : 'outline'}
+                  size="sm"
+                  leftIcon={<Check className="h-4 w-4" />}
+                  loading={setApproved.isPending}
+                  onClick={() =>
+                    setApproved.mutate({ id: app.id, approved: !app.approved })
+                  }
+                >
+                  {app.approved ? 'Remove from queue' : 'Approve for apply'}
+                </Button>
+                <Button
+                  size="sm"
+                  leftIcon={<Send className="h-4 w-4" />}
+                  disabled={!app.approved}
+                  onClick={() => setDialogOpen(true)}
+                >
+                  Apply now
+                </Button>
+              </>
+            )}
             {isApplied && (
               <Button
                 variant="secondary"
@@ -167,6 +225,18 @@ export default function JobDetailPage() {
           </p>
         )}
       </motion.div>
+
+      <ConfirmApplyDialog
+        open={dialogOpen}
+        count={1}
+        remainingToday={remainingToday}
+        delaySec={cfg?.applyDelaySec ?? 8}
+        consentGiven={cfg?.applyConsent ?? false}
+        onConfirm={handleConfirm}
+        onCancel={() => setDialogOpen(false)}
+        applying={applySelected.isPending}
+        error={applyError}
+      />
     </div>
   );
 }
