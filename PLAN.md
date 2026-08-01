@@ -50,7 +50,7 @@
 
 - [x] Resume "New resume" tab (ImproveTab) crash — **defensive shape guard** (backend `/resume/improve` stub ≠ `{previewMD, dir, review}`); real backend handler still TODO
 - [x] Outreach Setup key mismatch — **api client normalizes** `maxEmailsDay`/`maxLinkedInDay` → `maxEmailsPerDay`/`maxLinkedInPerDay` (contract-tested)
-- [ ] `sendOutreachItem` return shape: backend `{id}` vs `OutreachItem`
+- [x] `sendOutreachItem` return shape — **typed honestly** as `{ id }` (backend stub echoes the id; UI never reads the payload). Real send handler still backend TODO.
 - [ ] A11y: ConfigPage labels not associated with inputs (`htmlFor`/`id`)
 - [ ] A11y: ConfirmApplyDialog focus trap + Escape + focus restore
 - [ ] A11y: filter tabs `aria-pressed` (Jobs/Outreach)
