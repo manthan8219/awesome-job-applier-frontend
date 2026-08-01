@@ -160,7 +160,7 @@ primitive (primitives stay data-source-agnostic).
 
 ## 10. Commit & PR hygiene
 
-- Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`).
+- Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`).
 - Keep PRs focused; run `npm run lint` + `npm run build` + `npm test` before
   pushing — the build type-checks, so a green build means types are sound.
 - Run the deeper suites before merging UI changes: `npm run test:contract`
@@ -170,6 +170,40 @@ primitive (primitives stay data-source-agnostic).
   data is never touched.
 - Don't commit `.env`; only `.env.example`. Keep secrets out of the bundle
   (any `VITE_` var is shipped to the client).
+
+### Git workflow (mandatory — branch → fix → test → push → merge)
+
+From today, every change ships through a feature branch, never straight to
+`main`:
+
+1. **Branch from `main`** (always start from an up-to-date `main`):
+   ```bash
+   git checkout main && git pull
+   git checkout -b fix/<short-name>      # or feat/…, chore/…, docs/…
+   ```
+2. **Fix** — one focused change per branch (a bug, a feature, a doc update).
+3. **Test everything end-to-end before pushing** — all layers must be green:
+   ```bash
+   npm run lint
+   npm run build          # type-check + production build
+   npm test               # unit + component (Vitest)
+   npm run test:contract  # every api.ts method vs the real backend
+   npm run test:e2e       # Playwright browser journey (full flow)
+   ```
+   No push/PR until all five pass.
+4. **Push the branch:**
+   ```bash
+   git push -u origin fix/<short-name>
+   ```
+5. **Open a PR** against `main`, describe what changed + what was tested, and
+   keep it small enough to review quickly.
+6. **Merge the PR** (squash or merge commit — squash preferred for small
+   fixes), then delete the branch.
+7. **Keep `main` green** — after merging, `git checkout main && git pull` so
+   every future branch starts from the latest state.
+
+The current test plan and product backlog live in [`PLAN.md`](../PLAN.md); each
+backlog item should be its own branch/PR.
 
 ## 11. Do / Don't
 
