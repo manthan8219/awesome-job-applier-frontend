@@ -316,6 +316,7 @@ export default function OnboardingPage() {
           )}
           {step === 'profile' && (
             <ProfileStep
+              intent={intent}
               titles={titles}
               onTitlesChange={setTitles}
               suggestedTitles={suggested}

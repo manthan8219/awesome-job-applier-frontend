@@ -360,7 +360,7 @@ export const api = {
     intent: string,
     years?: string,
     hints?: string[],
-  ): Promise<{ titles: string[]; intent: string }> {
+  ): Promise<{ titles: string[]; intent: string; profession?: string }> {
     return request('/job-titles/suggest', {
       method: 'POST',
       body: JSON.stringify({ intent, years, hints }),

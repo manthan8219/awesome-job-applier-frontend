@@ -47,6 +47,9 @@ describe('OnboardingPage', () => {
     expect(await screen.findByText('Senior Go Engineer')).toBeInTheDocument();
     expect(screen.getByText('Platform Engineer')).toBeInTheDocument();
     expect(
+      screen.getByText(/detected: engineering/i),
+    ).toBeInTheDocument();
+    expect(
       screen.getByRole('button', { name: /show me jobs/i }),
     ).toBeInTheDocument();
   });

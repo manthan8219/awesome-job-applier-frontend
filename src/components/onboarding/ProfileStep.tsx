@@ -1,8 +1,10 @@
-import { ArrowLeft, Rocket } from 'lucide-react';
+import { ArrowLeft, Rocket, Sparkles } from 'lucide-react';
 import { TagInput } from '@/components/config/TagInput';
 import { ResumeUpload } from '@/components/config/ResumeUpload';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { WORK_TYPES } from '@/constants';
+import { detectProfession } from '@/lib/profession';
 import { cn } from '@/lib/utils';
 
 const labelCls =
@@ -12,6 +14,8 @@ const inputCls =
   'w-full rounded-xl border border-white/5 bg-ink-950/60 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 transition-colors focus:border-neon-cyan/40 focus:outline-none';
 
 interface ProfileStepProps {
+  /** Free-text aspiration that generated the suggestions, if any. */
+  intent?: string;
   titles: string[];
   onTitlesChange: (titles: string[]) => void;
   suggestedTitles: string[];
@@ -45,6 +49,7 @@ interface ProfileStepProps {
 
 /** Step 2: confirm the AI-generated search profile before the first dry run. */
 export function ProfileStep({
+  intent,
   titles,
   onTitlesChange,
   suggestedTitles,
@@ -78,6 +83,10 @@ export function ProfileStep({
   const remainingSuggestions = suggestedTitles.filter(
     (t) => !titles.includes(t),
   );
+
+  // Profession-aware badge: derive the domain from the intent + suggestions so
+  // it works with or without the backend's "profession" field. Unknown → none.
+  const profession = detectProfession([intent ?? '', ...suggestedTitles].join(' '));
 
   return (
     <div className="space-y-6">
@@ -131,6 +140,12 @@ export function ProfileStep({
 
       <div className="space-y-2">
         <label className={labelCls}>Target roles</label>
+        {profession && (
+          <Badge className="border-neon-cyan/25 bg-neon-cyan/10 text-neon-cyan">
+            <Sparkles className="h-3 w-3" />
+            Detected: {profession}
+          </Badge>
+        )}
         <TagInput
           tags={titles}
           onTagsChange={onTitlesChange}
