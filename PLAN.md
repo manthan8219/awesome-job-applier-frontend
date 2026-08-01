@@ -53,7 +53,7 @@
 - [x] `sendOutreachItem` return shape — **typed honestly** as `{ id }` (backend stub echoes the id; UI never reads the payload). Real send handler still backend TODO.
 - [x] A11y: ConfigPage labels associated with inputs (`htmlFor`/`id` via `useId`), toggles → `role="switch"` + `aria-checked`, Select → `aria-pressed`, TagInput `aria-label`, Run-time label, ResumeUpload labeled + keyboard dropzone
 - [x] A11y: ConfirmApplyDialog focus trap + Escape + focus restore (new `useFocusTrap` hook)
-- [ ] A11y: filter tabs `aria-pressed` (Jobs/Outreach)
+- [x] A11y: filter tabs `aria-pressed` (Jobs filters, Outreach tabs, Contacts tabs)
 
 ### 🟡 Core flow completion
 

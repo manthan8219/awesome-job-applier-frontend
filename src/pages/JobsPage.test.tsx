@@ -147,4 +147,24 @@ describe('JobsPage review flow', () => {
       screen.getByRole('button', { name: /interview/i }),
     ).toBeInTheDocument();
   });
+
+  it('marks the active filter with aria-pressed', async () => {
+    vi.spyOn(api, 'getApplications').mockResolvedValue([
+      makeApp({ id: 1, status: 'queued' }),
+    ]);
+    vi.spyOn(api, 'getConfig').mockResolvedValue(emptyProfile());
+
+    renderPage();
+
+    const all = await screen.findByRole('button', { name: /^all$/i });
+    expect(all).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /^queue$/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    expect(screen.getByRole('button', { name: /^applied$/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
 });

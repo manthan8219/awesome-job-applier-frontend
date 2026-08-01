@@ -93,4 +93,19 @@ describe('OutreachPage', () => {
     );
     await waitFor(() => expect(build).toHaveBeenCalledWith('email'));
   });
+
+  it('marks the active tab with aria-pressed', async () => {
+    vi.spyOn(api, 'getOutreachSetup').mockResolvedValue(setup);
+    vi.spyOn(api, 'getOutreachItems').mockResolvedValue([]);
+    vi.spyOn(api, 'getOutreachLog').mockResolvedValue([]);
+
+    renderPage();
+
+    const setupTab = await screen.findByRole('button', { name: /^setup$/i });
+    expect(setupTab).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /^email$/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
 });

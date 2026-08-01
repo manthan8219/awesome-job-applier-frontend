@@ -209,6 +209,7 @@ export default function JobsPage() {
             <button
               key={f.id}
               type="button"
+              aria-pressed={filter === f.id}
               onClick={() => setFilter(f.id)}
               className={cn(
                 'rounded-lg px-3 py-1.5 text-xs transition-all',
