@@ -10,6 +10,7 @@ import type {
   OutreachChannel,
   OutreachItem,
   OutreachLogEntry,
+  OutreachMode,
   OutreachSetup,
 } from '@/types/outreach';
 import type {
@@ -210,7 +211,21 @@ export const api = {
   /* ------------------------------ Outreach ----------------------------- */
 
   async getOutreachSetup(): Promise<OutreachSetup> {
-    return request<OutreachSetup>('/outreach/setup');
+    // The backend currently sends maxEmailsDay/maxLinkedInDay; the frontend
+    // contract is maxEmailsPerDay/maxLinkedInPerDay. Normalize both so the
+    // Setup form renders real values now and stays correct once the backend
+    // switches to the canonical keys.
+    const raw = await request<Record<string, unknown>>('/outreach/setup');
+    return {
+      consent: Boolean(raw.consent),
+      mode: (raw.mode as OutreachMode) ?? 'confirm',
+      maxEmailsPerDay: Number(raw.maxEmailsPerDay ?? raw.maxEmailsDay ?? 10),
+      maxLinkedInPerDay: Number(
+        raw.maxLinkedInPerDay ?? raw.maxLinkedInDay ?? 5,
+      ),
+      aiCompose: Boolean(raw.aiCompose),
+      aiReview: Boolean(raw.aiReview),
+    };
   },
 
   async saveOutreachSetup(setup: OutreachSetup): Promise<OutreachSetup> {

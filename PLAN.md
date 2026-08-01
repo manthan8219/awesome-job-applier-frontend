@@ -49,7 +49,7 @@
 ### 🔴 Quick wins — fix surfaces that are broken/hollow today
 
 - [x] Resume "New resume" tab (ImproveTab) crash — **defensive shape guard** (backend `/resume/improve` stub ≠ `{previewMD, dir, review}`); real backend handler still TODO
-- [ ] Outreach Setup key mismatch: backend `maxEmailsDay`/`maxLinkedInDay` vs frontend `maxEmailsPerDay`/`maxLinkedInPerDay`
+- [x] Outreach Setup key mismatch — **api client normalizes** `maxEmailsDay`/`maxLinkedInDay` → `maxEmailsPerDay`/`maxLinkedInPerDay` (contract-tested)
 - [ ] `sendOutreachItem` return shape: backend `{id}` vs `OutreachItem`
 - [ ] A11y: ConfigPage labels not associated with inputs (`htmlFor`/`id`)
 - [ ] A11y: ConfirmApplyDialog focus trap + Escape + focus restore
