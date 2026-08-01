@@ -19,10 +19,10 @@ test('referral-ask variant: setup persists and email drafts use the referral tem
   await expect(referral).toHaveAttribute('aria-checked', 'true');
 
   await page
-    .getByLabelText(/referral subject template/i)
+    .getByLabel(/referral subject template/i)
     .fill('Intro for {{role}} at {{company}}');
   await page
-    .getByLabelText(/referral body template/i)
+    .getByLabel(/referral body template/i)
     .fill('Could you introduce me to the hiring team?');
   await page.getByRole('button', { name: /save setup/i }).click();
 
@@ -33,7 +33,7 @@ test('referral-ask variant: setup persists and email drafts use the referral tem
   ).toHaveAttribute('aria-checked', 'true');
 
   // Building the email queue drafts a referral-ask item using the custom body.
-  await page.getByRole('button', { name: /^email$/i }).click();
+  await page.getByRole('button', { name: /^email/i }).click();
   await page.getByRole('button', { name: /build email queue/i }).click();
   await expect(page.getByText(/could you introduce me/i).first()).toBeVisible({
     timeout: 15_000,
