@@ -205,7 +205,49 @@ From today, every change ships through a feature branch, never straight to
 The current test plan and product backlog live in [`PLAN.md`](../PLAN.md); each
 backlog item should be its own branch/PR.
 
-## 11. Do / Don't
+### Jira workflow (mandatory — every PR and every piece of work)
+
+Every PR opened — and any other tracked piece of work — gets a Jira task created
+on the Nexus board (project **`KAN`**). The Jira MCP tools are configured in the
+Cline MCP config (credentials come from the MCP config, never the repo). Never
+skip this step: **no code, branch, or PR without a `KAN-###` task behind it.**
+
+The workflow is always: **create → tag/describe → attach PR → In Progress → Done**.
+Never leave a task stuck in the wrong column.
+
+1. **Create the task** — as soon as the PR opens (or the work starts).
+   - **Type:** `Task` (or `Story` for user-facing features); file it under the
+     matching roadmap Epic (`Epic 0`–`Epic 6`, keys KAN-6…KAN-12) when it belongs
+     to a phase.
+   - **Summary:** imperative and specific. **Description:** structured markdown —
+     **Goal → Context → Scope (checklist) → Files to touch → Acceptance criteria →
+     Room for improvement**.
+   - **Tags:** always `nexus` + `backend`/`frontend` + `phase-N` + area tags
+     (`api`, `engine`, `outreach`, `resume`, `ats`, `deliverability`, `analytics`,
+     `scheduler`, `ui`, `product`).
+   - **Priority** by urgency; **Due date** `YYYY-MM-DD` (tasks only, never epics).
+2. **Move to In Progress** when work on the PR actually starts.
+3. **Attach the PR** — link the PR (title + URL) to the task; put `KAN-###` in the
+   PR title/description for cross-linking.
+4. **Move to Done** when the work is complete and verified — PR merged, CI green
+   (`npm run lint` + `npm run build` + `npm test`, see §10).
+5. **Re-open or comment** if review expands the scope; update the task and its
+   acceptance criteria.
+
+**Credentials:** never in the repo. Read them at runtime from the Cline MCP
+config (`C:\Users\manthan\.cline\data\settings\cline_mcp_settings.json` →
+`mcpServers.jira.env`: `JIRA_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`) or use the
+configured Jira MCP server. Never commit, log, or paste them.
+
+**REST API fallback:** Basic auth `base64(JIRA_EMAIL:JIRA_API_TOKEN)` against
+`JIRA_URL`. Create: `POST {JIRA_URL}/rest/api/2/issue` with `project.key=KAN`,
+`issuetype.name=Task`, `summary`, `priority.name`, `labels[]`, `duedate`,
+`parent.key=<EPIC-KEY>` (when phased) and `description` (markdown string).
+Transitions: `GET/POST {JIRA_URL}/rest/api/2/issue/{key}/transitions`. Attach PR:
+`POST {JIRA_URL}/rest/api/2/issue/{key}/remotelink` with
+`{"object":{"url":…,"title":…}}`.
+
+## 11. Do / Don''t
 
 ✅ Do add a type for every prop and API payload.
 ✅ Do invalidate queries after mutations.
