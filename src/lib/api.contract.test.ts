@@ -281,15 +281,48 @@ describe.skipIf(!backendAvailable)(
     });
 
     describe('companies + contacts', () => {
-      it('getCompanies returns the CompaniesResult shape', async () => {
+      it('getCompanies lists the seeded catalog with counts', async () => {
         const r = await api.getCompanies();
         expect(Array.isArray(r.items)).toBe(true);
         expect(typeof r.total).toBe('number');
+        expect(r.total).toBeGreaterThan(0); // companies.db auto-seeds
         expect(r.counts).toBeDefined();
+        const c = r.items[0]!;
+        expect(typeof c.name).toBe('string');
+        expect(typeof c.boardURL).toBe('string');
+        expect(Array.isArray(c.hireCountries)).toBe(true);
+        expect(typeof c.updatedAt).toBe('string');
       });
 
-      it('refreshCompanies resolves', async () => {
-        expect(await api.refreshCompanies()).toBeDefined();
+      it('adds a company and lists it back', async () => {
+        const created = await api.saveCompany({
+          name: 'Acme Health',
+          website: 'https://acme.health',
+          boardURL: 'https://boards.greenhouse.io/acmehealth',
+          countries: 'Remote, US',
+          ats: 'greenhouse',
+        });
+        expect(created.id).toBeGreaterThan(0);
+        expect(created.name).toBe('Acme Health');
+        expect(created.hireCountries).toContain('Remote');
+
+        const r = await api.getCompanies('acme health');
+        expect(r.items.some((c) => c.name === 'Acme Health')).toBe(true);
+      });
+
+      it('refreshCompanies returns a bare count', async () => {
+        const n = await api.refreshCompanies();
+        expect(typeof n).toBe('number');
+        expect(n).toBeGreaterThanOrEqual(0); // idempotent upserts → 0 after seed
+      });
+
+      it('getCompanyJobs returns the frontend application shape', async () => {
+        const apps = await api.getCompanyJobs('Acme Health');
+        expect(Array.isArray(apps)).toBe(true);
+        if (apps.length > 0) {
+          expect(typeof apps[0]!.role).toBe('string');
+          expect(typeof apps[0]!.fitScore).toBe('number');
+        }
       });
 
       it('getSavedContacts returns an array', async () => {

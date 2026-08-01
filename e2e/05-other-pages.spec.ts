@@ -1,9 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { ensureOnboarded } from './helpers';
 
-test('companies page: add company form round-trips through the backend', async ({
-  page,
-}) => {
+test('companies page: add a company through the backend', async ({ page }) => {
   await ensureOnboarded();
   await page.goto('/companies');
   await expect(
@@ -21,9 +19,8 @@ test('companies page: add company form round-trips through the backend', async (
     .fill('https://boards.greenhouse.io/acmehealth');
   await page.getByRole('button', { name: /add company/i }).click();
 
-  // The backend companies surface is a stub (empty list) — the form must
-  // still close and the page render its empty state without crashing.
-  await expect(page.getByText(/no companies/i)).toBeVisible();
+  // The company persists to the backend and appears in the index.
+  await expect(page.getByText(/acme health/i).first()).toBeVisible();
 });
 
 test('contacts page: search against the backend stub shows the empty state', async ({

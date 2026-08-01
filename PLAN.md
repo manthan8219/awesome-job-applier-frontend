@@ -64,7 +64,7 @@
 
 ### 🟠 Backend surface completion
 
-- [ ] Real companies CRUD (persist; today a stub)
+- [x] Real companies CRUD — backend persisted store (`~/.nexus/companies.db`) + GET/PUT/refresh/jobs handlers (KAN-36); frontend Companies page works against real data
 - [ ] Real contacts OSINT search + saved contacts (today stubs)
 - [ ] Real outreach build/send (the Go repo has `internal/outreach`)
 - [ ] Real resume improve handler
