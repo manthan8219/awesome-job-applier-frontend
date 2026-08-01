@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { Card } from '@/components/ui/Card';
 import { TodayCard } from '@/components/dashboard/TodayCard';
+import { ReplyProbabilityFeed } from '@/components/dashboard/ReplyProbabilityFeed';
 import { OnboardingCard } from '@/components/dashboard/OnboardingCard';
 import { ModeCard } from '@/components/dashboard/ModeCard';
 import { NextAction } from '@/components/dashboard/NextAction';
@@ -87,7 +88,8 @@ export default function DashboardPage() {
           Your job-hunt command center
         </h1>
         <p className="text-sm text-slate-400">
-          Ready check, then one action — search 9 boards, score, and apply.
+          Target the jobs most likely to reply — search, fit-score, queue, then
+          apply with consent. No blast volume.
         </p>
       </header>
 
@@ -104,6 +106,7 @@ export default function DashboardPage() {
             maxPerDay={m.maxPerDay}
             resumePath={m.resumePath}
           />
+          <ReplyProbabilityFeed />
           <ProvidersGrid
             providers={m.providers}
             progress={m.progress}

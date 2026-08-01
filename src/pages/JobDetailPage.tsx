@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { DotBadge } from '@/components/ui/DotBadge';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { ConfirmApplyDialog } from '@/components/review/ConfirmApplyDialog';
+import { KeywordGapPanel } from '@/components/jobs/KeywordGapPanel';
 import { SubmittedPayloadCard } from '@/components/jobs/SubmittedPayloadCard';
 import { useApplications } from '@/hooks/useApplications';
 import { useApplySelected } from '@/hooks/useApplySelected';
@@ -210,6 +211,8 @@ export default function JobDetailPage() {
             )}
           </div>
         </Card>
+
+        <KeywordGapPanel description={jobDescription(app)} />
 
         <Card className="space-y-3 p-6">
           <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-violet/80">

@@ -63,6 +63,10 @@ export function OnboardingCard({
           </li>
         ))}
       </ul>
+
+      <p className="mt-3 text-[11px] text-slate-500">
+        Get these green — every completed step lifts your reply rate.
+      </p>
     </Card>
   );
 }
