@@ -18,10 +18,12 @@ test('guided reply-probability feed ranks seeded jobs with a why line (KAN-29)',
   await expect(cardiologist).toBeVisible();
   await expect(page.getByText(/fit 92/i).first()).toBeVisible();
 
-  // Next action: the row links into the jobs review queue.
+  // Next action: the row links into the job detail page.
+  await expect(cardiologist).toHaveAttribute('href', /\/jobs\/\d+/);
   await cardiologist.click();
+  await expect(page).toHaveURL(/\/jobs\/\d+/);
   await expect(
-    page.getByRole('heading', { name: /review & track applications/i }),
+    page.getByRole('heading', { name: /description/i }),
   ).toBeVisible();
 
   // Response-probability copy shift is live on the dashboard.
