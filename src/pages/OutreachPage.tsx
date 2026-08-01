@@ -52,6 +52,9 @@ function Toggle({
       <span className="text-sm font-medium text-slate-200">{label}</span>
       <button
         type="button"
+        role="switch"
+        aria-checked={value}
+        aria-label={label}
         onClick={() => onChange(!value)}
         className={cn(
           'relative h-7 w-12 shrink-0 rounded-full transition-colors',
@@ -152,6 +155,45 @@ function SetupSub({
           value={form.aiReview}
           onChange={(v) => patch({ aiReview: v })}
         />
+      </div>
+      <div className="space-y-2.5 border-t border-white/5 pt-3">
+        <Toggle
+          label="Referral-ask variant"
+          value={form.referralAsk}
+          onChange={(v) => patch({ referralAsk: v })}
+        />
+        <p className="text-xs text-slate-500">
+          Switches email drafts to a warm referral ask — "know who owns
+          hiring?" — instead of a self pitch. Same consent, caps and
+          reply-check as regular email.
+        </p>
+        {form.referralAsk && (
+          <>
+            <label className="space-y-1">
+              <span className="block text-xs font-medium uppercase tracking-wider text-slate-500">
+                Referral subject template
+              </span>
+              <input
+                className={inputCls}
+                value={form.referralSubjectTpl ?? ''}
+                onChange={(e) => patch({ referralSubjectTpl: e.target.value })}
+                placeholder="Referral — {{role}} at {{company}}"
+              />
+            </label>
+            <label className="space-y-1">
+              <span className="block text-xs font-medium uppercase tracking-wider text-slate-500">
+                Referral body template
+              </span>
+              <textarea
+                className={cn(inputCls, 'h-auto resize-y')}
+                rows={3}
+                value={form.referralBodyTpl ?? ''}
+                onChange={(e) => patch({ referralBodyTpl: e.target.value })}
+                placeholder="Hi {{contact_name}} — I applied for {{role}} at {{company}}. Would appreciate any referral or tip on the hiring process. Thanks!"
+              />
+            </label>
+          </>
+        )}
       </div>
       <div className="flex justify-end">
         <Button size="sm" loading={saving} onClick={() => onSave(form)}>

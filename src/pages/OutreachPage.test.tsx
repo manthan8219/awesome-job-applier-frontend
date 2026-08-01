@@ -12,6 +12,7 @@ const setup: OutreachSetup = {
   maxLinkedInPerDay: 5,
   aiCompose: false,
   aiReview: false,
+  referralAsk: false,
 };
 
 function makeClient() {
@@ -106,6 +107,38 @@ describe('OutreachPage', () => {
     expect(screen.getByRole('button', { name: /^email$/i })).toHaveAttribute(
       'aria-pressed',
       'false',
+    );
+  });
+
+  it('persists the referral-ask variant and its templates', async () => {
+    vi.spyOn(api, 'getOutreachSetup').mockResolvedValue(setup);
+    vi.spyOn(api, 'getOutreachItems').mockResolvedValue([]);
+    vi.spyOn(api, 'getOutreachLog').mockResolvedValue([]);
+    const saveSetup = vi
+      .spyOn(api, 'saveOutreachSetup')
+      .mockResolvedValue(setup);
+
+    renderPage();
+
+    const referral = await screen.findByRole('switch', {
+      name: /referral-ask variant/i,
+    });
+    expect(referral).toHaveAttribute('aria-checked', 'false');
+
+    fireEvent.click(referral);
+    expect(referral).toHaveAttribute('aria-checked', 'true');
+
+    const body = screen.getByLabelText(/referral body template/i);
+    fireEvent.change(body, { target: { value: 'Could you introduce me?' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /save setup/i }));
+    await waitFor(() =>
+      expect(saveSetup).toHaveBeenCalledWith(
+        expect.objectContaining({
+          referralAsk: true,
+          referralBodyTpl: 'Could you introduce me?',
+        }),
+      ),
     );
   });
 });
