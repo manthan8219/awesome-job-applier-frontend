@@ -80,6 +80,16 @@
 - [x] **Real template previews (choose a design by seeing it)** — backend `GET /api/resume/templates/{id}/preview.pdf` renders a realistic sample persona (`resume.SampleResume()`) through the exact same PDF engine real resumes use (400 on unknown id); the manifest now carries `headerAlign`/`showRule` tokens (explicit `showRule:false` so no-rule designs round-trip), and the gallery cards render an A4-proportioned **miniature sample resume** — real name/headline/sections/bullets in the template's fonts, accent, header alignment, rule and rail side — plus a per-card "View sample PDF" link to the real backend-rendered document
 - [x] Gates: backend `go build/vet/test` (68 pkgs) green; frontend lint/build green; vitest (250) incl. contract tests for `/resume/templates` tokens + the preview-PDF endpoint; resume e2e spec asserts the sample-persona gallery + preview link against the real backend
 
+### ✅ Content fitting (make the CV actually fit the template)
+
+- [x] **Space budgets per template** — every template manifest now declares a `SpaceBudget` (`targetPages`, `maxSummaryLines`, `maxBulletsPerRole`, `maxRoles`, `maxSkills`, `maxEducation`, `charsPerLine`) derived from its geometry: Compact targets 1 page with a 100-char/line budget, Sidebar/Split drop to 60 chars/line for the narrow main column, Developer allows 14 skills, Academic 3 education entries
+- [x] **Deterministic planner** — `internal/resume/plan.go` `PlanContent(doc, tpl)`: slots content into the template's declared section order, estimates line usage from `charsPerLine`, caps overflows (top roles/bullets/skills/education, word-boundary summary truncation), and returns a `FitPlan` with planned/target lines, estimated pages, a 0–100 fit score, trimmed sections and warnings — plus the fitted doc the pipeline renders
+- [x] **Verified page count** — `RenderNativePDFForCounted` reports the real rendered page count (gofpdf `PageNo()`); `GenerateImproved` renders to a temp path after export, sets `fit.pages`, and adds a warning when a one-page template spills
+- [x] **AI writes to the budget** — `polishTemplateBlock` now lists the template's exact caps (summary lines, roles × bullets, chars/line, skills, education) so the creator writes within them instead of relying on the planner to trim
+- [x] **API** — `/resume/improve` returns `fit` (`FitPlan`: budget, plannedLines, targetLines, estimatedPages, pages, fitScore, warnings, trimmedSections); `/resume/templates` includes each template's `budget`
+- [x] **Frontend** — `ResumeSpaceBudget`/`ResumeFit` types + offline fallback budgets for all 12 templates; template cards show capacity chips (`≤5 roles · ≤4 bullets · ≤12 skills · ≤2 edu`); the result panel shows a **Fit report** (fit score, rendered pages, content lines, trimmed-sections + warnings)
+- [x] Gates: backend `go build/vet/test` green (new `plan_test.go` + page-count + API-shape tests); frontend lint/build green; vitest (252) incl. contract assertions on live budgets; resume e2e asserts capacity chips from the real backend
+
 ### 🔵 Product leaps (advisory)
 
 - [x] Profession-aware onboarding (doctor/engineer/designer…) — `SuggestProfession` (backend) + detected-profession badge in the onboarding wizard (KAN-44)

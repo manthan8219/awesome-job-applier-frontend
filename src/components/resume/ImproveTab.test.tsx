@@ -88,6 +88,61 @@ describe('ImproveTab', () => {
     expect(await screen.findByText(/template: modern/i)).toBeInTheDocument();
   });
 
+  it('renders the fit report when the backend returns one', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
+    );
+    vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
+    vi.spyOn(api, 'improveResume').mockResolvedValue({
+      ...validOutput,
+      fit: {
+        templateId: 'compact',
+        layout: 'single',
+        plannedLines: 42,
+        targetLines: 54,
+        estimatedPages: 1,
+        pages: 1,
+        fitScore: 100,
+        trimmedSections: ['each role capped at 3 bullets'],
+        warnings: ['content was trimmed to fit the template'],
+      },
+    });
+    mockTemplates();
+
+    renderTab();
+
+    await enableAndClickGenerate();
+
+    expect(await screen.findByText(/fit report/i)).toBeInTheDocument();
+    expect(screen.getByText('100/100')).toBeInTheDocument();
+    expect(screen.getAllByText(/1 page/).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/trimmed to fit the template/i).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText(/each role capped at 3 bullets/i),
+    ).toBeInTheDocument();
+  });
+
+  it('shows each template content budget on its card', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
+    );
+    vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
+    vi.spyOn(api, 'improveResume').mockResolvedValue(validOutput);
+    mockTemplates();
+
+    renderTab();
+
+    // Classic et al cap at 5 roles; sidebar/split/minimal/dev cap at 4;
+    // compact caps bullets at 3. The chips make the template's capacity legible.
+    await waitFor(() =>
+      expect(screen.getAllByText('≤5 roles').length).toBeGreaterThan(0),
+    );
+    expect(screen.getAllByText('≤4 roles').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('≤3 bullets').length).toBeGreaterThan(0);
+  });
+
   it('renders template cards, defaults to Classic, and passes the selection', async () => {
     vi.spyOn(api, 'getConfig').mockResolvedValue(
       makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
