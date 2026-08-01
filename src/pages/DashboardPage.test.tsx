@@ -138,4 +138,61 @@ describe('DashboardPage', () => {
     );
     await waitFor(() => expect(setOutcome).toHaveBeenCalledWith(5, 'ghosted'));
   });
+
+  it('surfaces an AI Assist check and nudge when AI is off', async () => {
+    vi.spyOn(api, 'getMission').mockResolvedValue(
+      makeMission({ aiOn: false }),
+    );
+    vi.spyOn(api, 'getApplications').mockResolvedValue([makeApp()]);
+    // Default fixture config has aiAssist off.
+    vi.spyOn(api, 'getConfig').mockResolvedValue(makeConfig());
+
+    renderPage();
+
+    // Ready card: AI Assist is listed with an actionable hint.
+    expect(
+      await screen.findByText(/ai assist off — enable it in config/i),
+    ).toBeInTheDocument();
+    // A guided next-action nudges toward AI once the profile basics are done.
+    expect(
+      screen.getByText(/next: turn on ai assist to unlock/i),
+    ).toBeInTheDocument();
+  });
+
+  it('marks AI Assist on and hides the nudge when it is enabled', async () => {
+    vi.spyOn(api, 'getMission').mockResolvedValue(
+      makeMission({ aiOn: true }),
+    );
+    vi.spyOn(api, 'getApplications').mockResolvedValue([makeApp()]);
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({
+        aiAssist: true,
+        aiProvider: 'local',
+        localLLMModel: 'llama3.2:latest',
+      }),
+    );
+
+    renderPage();
+
+    expect(
+      await screen.findByText('AI Assist on'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/next: turn on ai assist to unlock/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it('hides the AI nudge while a run is active', async () => {
+    vi.spyOn(api, 'getMission').mockResolvedValue(
+      makeMission({ engineStatus: 'running', aiOn: false }),
+    );
+    vi.spyOn(api, 'getApplications').mockResolvedValue([makeApp()]);
+    vi.spyOn(api, 'getConfig').mockResolvedValue(makeConfig());
+
+    renderPage();
+
+    expect(
+      screen.queryByText(/next: turn on ai assist to unlock/i),
+    ).not.toBeInTheDocument();
+  });
 });

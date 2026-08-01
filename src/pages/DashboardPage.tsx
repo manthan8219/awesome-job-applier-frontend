@@ -24,6 +24,7 @@ import { useApplications } from '@/hooks/useApplications';
 import { useConfig } from '@/hooks/useConfig';
 import { useSetOutcome } from '@/hooks/useSetOutcome';
 import { localDayKey, shouldFireDailyRun } from '@/lib/schedule';
+import type { ReadyCheck } from '@/types';
 
 export default function DashboardPage() {
   const { data: m, isLoading } = useMission();
@@ -38,6 +39,30 @@ export default function DashboardPage() {
 
   const running = m?.engineStatus === 'running';
   const apps = useMemo(() => data ?? [], [data]);
+
+  // The backend Ready checklist doesn't cover AI Assist, so the dashboard
+  // appends an AI check derived from config. It is "recommended, not
+  // required": onboardingComplete comes from the backend and ignores it.
+  const aiCheck = useMemo<ReadyCheck>(
+    () => ({
+      key: 'ai-assist',
+      ok: !!cfg?.aiAssist,
+      label: 'AI Assist on',
+      hint: cfg?.aiAssist
+        ? 'AI Assist on — fit-scoring & tailored answers'
+        : 'AI Assist off — enable it in Config for fit-scoring & tailored answers',
+    }),
+    [cfg?.aiAssist],
+  );
+  const checks = useMemo(
+    () => [...(m?.checks ?? []), aiCheck],
+    [m?.checks, aiCheck],
+  );
+
+  // Guide the user toward AI Assist once the profile basics are done — the
+  // exact moment it matters, without cluttering the earlier onboarding steps.
+  const showAiNudge =
+    !cfg?.aiAssist && m?.onboardingComplete && !running;
 
   // Stable handlers so memoized children (ModeCard, StaleNudge) skip renders
   // when only the live feed changed.
@@ -95,6 +120,9 @@ export default function DashboardPage() {
 
       <RunSummaryBanner snapshot={m} />
       <NextAction text={m.nextAction} />
+      {showAiNudge && (
+        <NextAction text="Next: turn on AI Assist to unlock fit-scoring and tailored answers." />
+      )}
 
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
@@ -135,7 +163,7 @@ export default function DashboardPage() {
             onStop={onStop}
           />
           <OnboardingCard
-            checks={m.checks}
+            checks={checks}
             onboardingComplete={m.onboardingComplete}
           />
           <Card className="p-4">
