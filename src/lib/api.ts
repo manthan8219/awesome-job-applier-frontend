@@ -260,10 +260,11 @@ export const api = {
     });
   },
 
-  async sendOutreachItem(id: string): Promise<{ id: string }> {
-    // The backend currently echoes the id (stub). When real sending lands it
-    // should return a full OutreachItem — bump the return type then.
-    return request<{ id: string }>(`/outreach/send/${encodeURIComponent(id)}`, {
+  async sendOutreachItem(id: string): Promise<OutreachItem> {
+    // The backend runs the real send pipeline and returns the item with its
+    // updated status (sent / failed). Without email credentials or consent the
+    // request rejects with a 400 carrying the honest reason.
+    return request<OutreachItem>(`/outreach/send/${encodeURIComponent(id)}`, {
       method: 'POST',
     });
   },

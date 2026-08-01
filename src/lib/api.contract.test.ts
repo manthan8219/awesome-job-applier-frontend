@@ -363,9 +363,7 @@ describe.skipIf(!backendAvailable)(
     });
 
     describe('outreach', () => {
-      it('getOutreachSetup normalizes backend keys into the frontend contract', async () => {
-        // The backend sends maxEmailsDay/maxLinkedInDay; the client must expose
-        // maxEmailsPerDay/maxLinkedInPerDay with real numeric values.
+      it('outreach setup round-trips real config values', async () => {
         const setup = await api.getOutreachSetup();
         expect(typeof setup.consent).toBe('boolean');
         expect(typeof setup.maxEmailsPerDay).toBe('number');
@@ -373,19 +371,54 @@ describe.skipIf(!backendAvailable)(
         expect(typeof setup.maxLinkedInPerDay).toBe('number');
         expect(typeof setup.aiCompose).toBe('boolean');
         expect(['confirm', 'queue', 'auto']).toContain(setup.mode);
+
+        // Persist a change and read it back.
+        const updated = {
+          ...setup,
+          consent: true,
+          mode: 'auto' as const,
+          maxEmailsPerDay: 7,
+          maxLinkedInPerDay: 3,
+          aiCompose: true,
+        };
+        await api.saveOutreachSetup(updated);
+        const reread = await api.getOutreachSetup();
+        expect(reread.consent).toBe(true);
+        expect(reread.mode).toBe('auto');
+        expect(reread.maxEmailsPerDay).toBe(7);
+        expect(reread.maxLinkedInPerDay).toBe(3);
       });
 
       it('getOutreachItems resolves to an array', async () => {
         expect(Array.isArray(await api.getOutreachItems())).toBe(true);
       });
 
-      it('buildOutreachQueue resolves to an array', async () => {
-        expect(Array.isArray(await api.buildOutreachQueue('email'))).toBe(true);
+      it('buildOutreachQueue creates items from applied jobs', async () => {
+        const created = await api.buildOutreachQueue('email');
+        expect(Array.isArray(created)).toBe(true);
+        // The seeded store has an applied job → at least one draft is created.
+        expect(created.length).toBeGreaterThan(0);
+        const first = created[0]!;
+        expect(typeof first.id).toBe('string');
+        expect(typeof first.company).toBe('string');
+        expect(typeof first.status).toBe('string');
+        expect(typeof first.body).toBe('string');
       });
 
-      it('sendOutreachItem returns the backend stub shape ({ id })', async () => {
-        const res = await api.sendOutreachItem('contract-item-1');
-        expect(res.id).toBe('contract-item-1');
+      it('sendOutreachItem without email credentials rejects honestly', async () => {
+        const items = await api.getOutreachItems();
+        const emailItem = items.find((i) => i.channel === 'email');
+        expect(emailItem).toBeTruthy();
+        // No Gmail app password / OAuth in the test env → real send must 400.
+        await expect(api.sendOutreachItem(emailItem!.id)).rejects.toMatchObject({
+          status: 400,
+        });
+      });
+
+      it('sendOutreachItem for a missing id returns 404', async () => {
+        await expect(
+          api.sendOutreachItem('no-such-item-xyz'),
+        ).rejects.toMatchObject({ status: 404 });
       });
 
       it('getOutreachLog resolves to an array', async () => {

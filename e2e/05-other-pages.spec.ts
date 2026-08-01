@@ -74,6 +74,27 @@ test('outreach page: opt-in gate + setup tab render', async ({ page }) => {
   await expect(page.getByText(/outreach is opt-in/i)).toBeVisible();
 });
 
+test('outreach page: building the email queue drafts items from applied jobs', async ({
+  page,
+}) => {
+  await ensureOnboarded();
+  await page.goto('/outreach');
+  await expect(
+    page.getByRole('heading', { name: /recruiter outreach/i }),
+  ).toBeVisible();
+
+  await page.getByRole('button', { name: /^email$/i }).click();
+  await expect(page.getByText(/no email items yet/i)).toBeVisible();
+
+  // The seed contains an applied job at Acme Health → the real build pipeline
+  // drafts an email item for it.
+  await page.getByRole('button', { name: /build email queue/i }).click();
+  await expect(page.getByText(/acme health/i).first()).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByText(/no email items yet/i)).toHaveCount(0);
+});
+
 test('logs page renders the engine log and usage panel', async ({ page }) => {
   await ensureOnboarded();
   await page.goto('/logs');
