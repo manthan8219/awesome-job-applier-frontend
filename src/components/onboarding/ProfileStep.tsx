@@ -5,8 +5,11 @@ import { Button } from '@/components/ui/Button';
 import { WORK_TYPES } from '@/constants';
 import { cn } from '@/lib/utils';
 
-const labelCls = 'block text-xs font-medium uppercase tracking-wider text-slate-500';
+const labelCls =
+  'block text-xs font-medium uppercase tracking-wider text-slate-500';
 const hintCls = 'text-xs text-slate-600';
+const inputCls =
+  'w-full rounded-xl border border-white/5 bg-ink-950/60 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 transition-colors focus:border-neon-cyan/40 focus:outline-none';
 
 interface ProfileStepProps {
   titles: string[];
@@ -18,10 +21,21 @@ interface ProfileStepProps {
   onLocationsChange: (locations: string[]) => void;
   locationSuggestions: string[];
   onLocationInput: (value: string) => void;
+  firstName: string;
+  onFirstNameChange: (value: string) => void;
+  lastName: string;
+  onLastNameChange: (value: string) => void;
+  email: string;
+  onEmailChange: (value: string) => void;
+  applyConsent: boolean;
+  onApplyConsentChange: (value: boolean) => void;
   resumePath: string;
   onResumePathChange: (path: string) => void;
   fileSuggestions: string[];
   onFileInput: (value: string) => void;
+  analyzing: boolean;
+  analysisMsg: string | null;
+  onAnalyze: () => void;
   onShowJobs: () => void;
   onSkip: () => void;
   onBack: () => void;
@@ -40,17 +54,30 @@ export function ProfileStep({
   onLocationsChange,
   locationSuggestions,
   onLocationInput,
+  firstName,
+  onFirstNameChange,
+  lastName,
+  onLastNameChange,
+  email,
+  onEmailChange,
+  applyConsent,
+  onApplyConsentChange,
   resumePath,
   onResumePathChange,
   fileSuggestions,
   onFileInput,
+  analyzing,
+  analysisMsg,
+  onAnalyze,
   onShowJobs,
   onSkip,
   onBack,
   saving,
   error,
 }: ProfileStepProps) {
-  const remainingSuggestions = suggestedTitles.filter((t) => !titles.includes(t));
+  const remainingSuggestions = suggestedTitles.filter(
+    (t) => !titles.includes(t),
+  );
 
   return (
     <div className="space-y-6">
@@ -70,6 +97,37 @@ export function ProfileStep({
           Confirm the roles you&apos;re hunting for — add or remove freely.
         </p>
       </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="space-y-1">
+          <span className={labelCls}>First name</span>
+          <input
+            className={inputCls}
+            value={firstName}
+            onChange={(e) => onFirstNameChange(e.target.value)}
+            placeholder="Ada"
+          />
+        </label>
+        <label className="space-y-1">
+          <span className={labelCls}>Last name</span>
+          <input
+            className={inputCls}
+            value={lastName}
+            onChange={(e) => onLastNameChange(e.target.value)}
+            placeholder="Lovelace"
+          />
+        </label>
+      </div>
+      <label className="space-y-1">
+        <span className={labelCls}>Email</span>
+        <input
+          type="email"
+          className={inputCls}
+          value={email}
+          onChange={(e) => onEmailChange(e.target.value)}
+          placeholder="ada@example.com"
+        />
+      </label>
 
       <div className="space-y-2">
         <label className={labelCls}>Target roles</label>
@@ -115,8 +173,7 @@ export function ProfileStep({
           onInputChange={onLocationInput}
         />
         <p className={hintCls}>
-          Optional — leave empty to search everywhere. Autocomplete as you
-          type.
+          Optional — leave empty to search everywhere. Autocomplete as you type.
         </p>
       </div>
 
@@ -126,17 +183,31 @@ export function ProfileStep({
           onResumeChange={onResumePathChange}
           fileSuggestions={fileSuggestions}
           onFileInput={onFileInput}
-          analyzing={false}
-          analysisMsg={null}
-          onAnalyze={() => undefined}
-          showAnalyze={false}
+          analyzing={analyzing}
+          analysisMsg={analysisMsg}
+          onAnalyze={onAnalyze}
+          showAnalyze
         />
         <p className={hintCls}>
           Only needed before auto-apply — you can skip this for now. Details
-          found in your resume (name, email, LinkedIn, phone…) are saved to
-          your profile automatically.
+          found in your resume (name, email, LinkedIn, phone…) are saved to your
+          profile automatically.
         </p>
       </div>
+
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-neon-amber/20 bg-neon-amber/5 px-3.5 py-3">
+        <input
+          type="checkbox"
+          checked={applyConsent}
+          onChange={(e) => onApplyConsentChange(e.target.checked)}
+          className="mt-0.5 h-4 w-4 accent-neon-cyan"
+        />
+        <span className="text-xs leading-relaxed text-slate-300">
+          I consent to Nexus submitting applications on my behalf, within my
+          daily and per-run caps, with a pause between each. You&apos;ll confirm
+          again right before anything is actually sent.
+        </span>
+      </label>
 
       {error && <p className="text-sm text-red-400">{error}</p>}
 

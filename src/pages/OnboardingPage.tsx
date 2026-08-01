@@ -39,7 +39,13 @@ export default function OnboardingPage() {
   const [titles, setTitles] = useState<string[]>([]);
   const [workType, setWorkType] = useState('Remote');
   const [locations, setLocations] = useState<string[]>([]);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [applyConsent, setApplyConsent] = useState(false);
   const [resumePath, setResumePath] = useState('');
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisMsg, setAnalysisMsg] = useState<string | null>(null);
   const [liveTitles, setLiveTitles] = useState<string[]>([]);
   const [aiOff, setAiOff] = useState(false);
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
@@ -134,10 +140,34 @@ export default function OnboardingPage() {
     api
       .reanalyzeResume(path)
       .then((r) => {
-        if (r.valid) setResumeContact(r.contact ?? null);
+        if (r.valid) {
+          setResumeContact(r.contact ?? null);
+          setAnalysisMsg(r.message || 'Resume is valid');
+        } else {
+          setAnalysisMsg(r.err || 'Analysis failed');
+        }
       })
-      .catch(() => undefined);
+      .catch(() => setAnalysisMsg('Analysis failed'));
   }, [resumePath]);
+
+  async function handleAnalyzeResume() {
+    const path = resumePath.trim();
+    if (!path) return;
+    setAnalyzing(true);
+    setAnalysisMsg(null);
+    try {
+      const result = await api.reanalyzeResume(path);
+      if (result.valid) {
+        setAnalysisMsg(result.message || 'Resume is valid');
+        setResumeContact(result.contact ?? null);
+      } else {
+        setAnalysisMsg(result.err || 'Analysis failed');
+      }
+    } catch {
+      setAnalysisMsg('Analysis failed');
+    }
+    setAnalyzing(false);
+  }
 
   if (isLoading) return <PageLoader label="Loading your profile" />;
 
@@ -148,9 +178,9 @@ export default function OnboardingPage() {
     const backfill = contactPatch(base, resumeContact);
     return {
       ...base,
-      firstName: backfill.firstName ?? base.firstName,
-      lastName: backfill.lastName ?? base.lastName,
-      email: backfill.email ?? base.email,
+      firstName: firstName.trim() || (backfill.firstName ?? base.firstName),
+      lastName: lastName.trim() || (backfill.lastName ?? base.lastName),
+      email: email.trim() || (backfill.email ?? base.email),
       phone: backfill.phone ?? base.phone,
       linkedinId: backfill.linkedinId ?? base.linkedinId,
       yearsOfExperience: backfill.yearsOfExperience ?? base.yearsOfExperience,
@@ -160,6 +190,7 @@ export default function OnboardingPage() {
       workType,
       targetLocations: locations.join(', '),
       resumePath: resumePath.trim(),
+      applyConsent: applyConsent || base.applyConsent,
     };
   }
 
@@ -294,10 +325,21 @@ export default function OnboardingPage() {
               onLocationsChange={setLocations}
               locationSuggestions={locationSuggestions}
               onLocationInput={handleLocationInput}
+              firstName={firstName}
+              onFirstNameChange={setFirstName}
+              lastName={lastName}
+              onLastNameChange={setLastName}
+              email={email}
+              onEmailChange={setEmail}
+              applyConsent={applyConsent}
+              onApplyConsentChange={setApplyConsent}
               resumePath={resumePath}
               onResumePathChange={setResumePath}
               fileSuggestions={fileSuggestions}
               onFileInput={handleFileInput}
+              analyzing={analyzing}
+              analysisMsg={analysisMsg}
+              onAnalyze={handleAnalyzeResume}
               onShowJobs={handleShowJobs}
               onSkip={handleSkip}
               onBack={() => {

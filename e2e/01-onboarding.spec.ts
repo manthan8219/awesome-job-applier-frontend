@@ -22,9 +22,19 @@ test('first-run wizard takes a fresh user through to the dashboard', async ({
   await page.getByRole('button', { name: /just exploring/i }).click();
   await expect(page.getByText(/does this look right/i)).toBeVisible();
 
-  // Skip → dashboard (config now has a job intent, so the gate passes).
+  // Profile completeness: personal details + explicit apply consent.
+  await page.getByLabel(/first name/i).fill('Ada');
+  await page.getByLabel(/last name/i).fill('Lovelace');
+  await page.getByLabel(/email/i).fill('ada@example.com');
+  await page.getByRole('checkbox', { name: /i consent to nexus/i }).check();
+
+  // Skip → dashboard (config now has the profile + consent saved).
   await page.getByRole('button', { name: /skip/i }).click();
   await expect(
     page.getByRole('heading', { name: /your job-hunt command center/i }),
   ).toBeVisible();
+
+  // The Ready checklist picked up the profile: name/email hints are gone.
+  await expect(page.getByText(/fill your name in config/i)).toHaveCount(0);
+  await expect(page.getByText(/fill your email in config/i)).toHaveCount(0);
 });
