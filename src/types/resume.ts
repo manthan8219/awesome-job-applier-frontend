@@ -66,6 +66,32 @@ export interface ImproveOutput {
   /** Template that rendered this resume (optional — older backends omit it). */
   templateId?: string;
   templateName?: string;
+  /** Content→template fit report (optional — older backends omit it). */
+  fit?: ResumeFit;
+}
+
+/**
+ * Fit report from the planner (mirrors resume.FitPlan). How the content was
+ * slotted into the template, how many lines/pages it uses, and anything that
+ * was trimmed to make it fit.
+ */
+export interface ResumeFit {
+  templateId?: string;
+  layout?: string;
+  budget?: ResumeSpaceBudget;
+  /** Estimated content lines after fitting. */
+  plannedLines?: number;
+  /** Approximate lines the template's page holds. */
+  targetLines?: number;
+  /** Estimated pages before rendering (>= 1). */
+  estimatedPages?: number;
+  /** Verified page count of the rendered PDF (native renderer). */
+  pages?: number;
+  /** 0-100 confidence the content fits comfortably. */
+  fitScore?: number;
+  warnings?: string[];
+  trimmedSections?: string[];
+  sections?: { key: string; label: string; lines: number }[];
 }
 
 /** Export target for an improved resume (mirrors resume.Format). */
@@ -73,6 +99,23 @@ export type ResumeFormat = 'markdown' | 'latex' | 'pdf';
 
 /** Layout family a resume template uses (mirrors resume.TemplateLayout). */
 export type ResumeTemplateLayout = 'single' | 'sidebar';
+
+/**
+ * Content budget for a template (mirrors resume.SpaceBudget). How much content
+ * the design realistically holds on its target page count — the AI writes to
+ * it, the planner enforces it, and the renderer verifies the page count.
+ */
+export interface ResumeSpaceBudget {
+  /** 1 = must fit one page; 0 = flexible. */
+  targetPages?: number;
+  maxSummaryLines?: number;
+  maxBulletsPerRole?: number;
+  maxRoles?: number;
+  maxSkills?: number;
+  maxEducation?: number;
+  /** Approximate chars that fit one body line (drives line estimates). */
+  charsPerLine?: number;
+}
 
 /** A labelled content slot a template knows how to render. */
 export interface ResumeTemplateSection {
@@ -101,6 +144,8 @@ export interface ResumeTemplate {
   headerAlign?: 'left' | 'center';
   /** Whether the renderer draws an accent rule under the header. */
   showRule?: boolean;
+  /** Content budget this template fits on its target page count. */
+  budget?: ResumeSpaceBudget;
 }
 
 /** Offline fallback registry — mirrors the backend `GET /resume/templates`. */
@@ -121,6 +166,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'left',
     showRule: true,
     onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 5,
+      maxSkills: 12,
+      maxEducation: 2,
+      charsPerLine: 95,
+    },
     atsNote: 'Safest for ATS — single column, standard section names.',
   },
   {
@@ -139,6 +193,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'center',
     showRule: true,
     onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 5,
+      maxSkills: 12,
+      maxEducation: 2,
+      charsPerLine: 90,
+    },
     atsNote: 'ATS-safe — single column with standard section names.',
   },
   {
@@ -157,6 +220,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'center',
     showRule: false,
     onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 5,
+      maxSkills: 12,
+      maxEducation: 2,
+      charsPerLine: 90,
+    },
     bodyFont: 'serif',
     atsNote: 'ATS-safe — single column with standard section names.',
   },
@@ -176,6 +248,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'left',
     showRule: false,
     onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 2,
+      maxBulletsPerRole: 3,
+      maxRoles: 4,
+      maxSkills: 10,
+      maxEducation: 2,
+      charsPerLine: 90,
+    },
     atsNote: 'ATS-safe — single column with standard section names.',
   },
   {
@@ -194,6 +275,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'center',
     showRule: true,
     onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 5,
+      maxSkills: 12,
+      maxEducation: 3,
+      charsPerLine: 85,
+    },
     bodyFont: 'serif',
     atsNote: 'ATS-safe — single column with standard section names.',
   },
@@ -213,6 +303,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'left',
     showRule: true,
     onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 2,
+      maxBulletsPerRole: 3,
+      maxRoles: 4,
+      maxSkills: 14,
+      maxEducation: 2,
+      charsPerLine: 85,
+    },
     bodyFont: 'mono',
     atsNote: 'ATS-safe — single column with standard section names.',
   },
@@ -233,6 +332,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'center',
     showRule: true,
     onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 4,
+      maxSkills: 10,
+      maxEducation: 2,
+      charsPerLine: 60,
+    },
     atsNote:
       'Design-forward — two columns can confuse some ATS systems; use for roles where design matters.',
   },
@@ -253,6 +361,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'center',
     showRule: true,
     onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 4,
+      maxSkills: 10,
+      maxEducation: 2,
+      charsPerLine: 60,
+    },
     atsNote:
       'Design-forward — two columns can confuse some ATS systems; use for roles where design matters.',
   },
@@ -271,6 +388,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'left',
     showRule: true,
     onePage: true,
+    budget: {
+      targetPages: 1,
+      maxSummaryLines: 2,
+      maxBulletsPerRole: 3,
+      maxRoles: 5,
+      maxSkills: 10,
+      maxEducation: 2,
+      charsPerLine: 100,
+    },
     atsNote: 'Optimized for one page — good for senior candidates.',
   },
   {
@@ -289,6 +415,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'center',
     showRule: true,
     onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 5,
+      maxSkills: 12,
+      maxEducation: 2,
+      charsPerLine: 85,
+    },
     atsNote: 'ATS-safe — single column with standard section names.',
   },
   {
@@ -307,6 +442,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'left',
     showRule: false,
     onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 5,
+      maxSkills: 12,
+      maxEducation: 2,
+      charsPerLine: 90,
+    },
     bodyFont: 'serif',
     atsNote: 'ATS-safe — single column with standard section names.',
   },
@@ -325,6 +469,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     headerAlign: 'left',
     showRule: true,
     onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 5,
+      maxSkills: 12,
+      maxEducation: 2,
+      charsPerLine: 100,
+    },
     atsNote: 'ATS-safe — single column with standard section names.',
   },
 ];

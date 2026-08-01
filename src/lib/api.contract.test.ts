@@ -453,6 +453,16 @@ describe.skipIf(!backendAvailable)(
         const executive = templates.find((t) => t.id === 'executive');
         expect(executive?.headerAlign).toBe('center');
         expect(executive?.showRule).toBe(false);
+        // Every template declares a positive content budget (the AI writes to
+        // it and the planner enforces it); compact is the one-page design.
+        const compact = templates.find((t) => t.id === 'compact');
+        expect(compact?.budget?.targetPages).toBe(1);
+        for (const t of templates) {
+          expect(t.budget).toBeDefined();
+          expect(t.budget?.maxRoles).toBeGreaterThan(0);
+          expect(t.budget?.maxBulletsPerRole).toBeGreaterThan(0);
+          expect(t.budget?.charsPerLine).toBeGreaterThan(0);
+        }
         const ids = templates.map((t) => t.id);
         for (const id of [
           'classic', 'modern', 'sidebar', 'compact', 'executive', 'minimal',

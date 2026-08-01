@@ -6,6 +6,7 @@ import {
   Columns,
   ExternalLink,
   FileText,
+  Scissors,
   ShieldCheck,
   Sparkles,
   Wand2,
@@ -27,7 +28,9 @@ import {
 } from '@/types/resume';
 import type {
   ImproveOutput,
+  ResumeFit,
   ResumeFormat,
+  ResumeSpaceBudget,
   ResumeTemplate,
 } from '@/types/resume';
 
@@ -65,6 +68,32 @@ function ScoreGauge({
 }
 
 /**
+ * Small capacity chips for a template card: how much content the design holds
+ * (roles / bullets / skills / education). Mirrors the backend SpaceBudget that
+ * the AI writes to and the planner enforces.
+ */
+function BudgetChips({ budget }: { budget: ResumeSpaceBudget }) {
+  const parts: string[] = [];
+  if (budget.maxRoles) parts.push(`≤${budget.maxRoles} roles`);
+  if (budget.maxBulletsPerRole) parts.push(`≤${budget.maxBulletsPerRole} bullets`);
+  if (budget.maxSkills) parts.push(`≤${budget.maxSkills} skills`);
+  if (budget.maxEducation) parts.push(`≤${budget.maxEducation} edu`);
+  if (parts.length === 0) return null;
+  return (
+    <span className="flex flex-wrap gap-1.5">
+      {parts.map((p) => (
+        <span
+          key={p}
+          className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400"
+        >
+          {p}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
  * Validate the `/resume/improve` response before rendering. The backend may
  * return an incomplete shape (currently a stub) — rendering it blindly would
  * crash the tab, so we fall back to a graceful message instead.
@@ -80,6 +109,69 @@ function isImproveOutput(out: unknown): out is ImproveOutput {
     o.review !== null &&
     typeof o.review.atsScore === 'number' &&
     typeof o.review.qualityScore === 'number'
+  );
+}
+
+function FitReport({ fit }: { fit: ResumeFit }) {
+  const pages =
+    fit.pages ?? Math.ceil(fit.estimatedPages ?? 1);
+  return (
+    <Card className="space-y-3 p-5">
+      <SectionHeading>Fit report</SectionHeading>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl border border-white/5 bg-ink-800/40 p-3">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+            Fit score
+          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-neon-cyan">
+            {fit.fitScore ?? '—'}/100
+          </p>
+        </div>
+        <div className="rounded-xl border border-white/5 bg-ink-800/40 p-3">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+            Rendered
+          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-slate-100">
+            {pages} page{pages === 1 ? '' : 's'}
+          </p>
+        </div>
+        <div className="rounded-xl border border-white/5 bg-ink-800/40 p-3">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+            Content lines
+          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-slate-100">
+            {fit.plannedLines ?? '—'}
+            {fit.targetLines ? `/${fit.targetLines}` : ''}
+          </p>
+        </div>
+      </div>
+      {fit.trimmedSections && fit.trimmedSections.length > 0 && (
+        <div className="space-y-1 rounded-xl border border-neon-amber/20 bg-neon-amber/5 p-3">
+          <p className="flex items-center gap-2 text-xs font-medium text-neon-amber">
+            <Scissors className="h-3.5 w-3.5 shrink-0" />
+            Trimmed to fit the template
+          </p>
+          <ul className="list-disc space-y-0.5 pl-5 text-xs text-slate-300">
+            {fit.trimmedSections.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {fit.warnings && fit.warnings.length > 0 && (
+        <div className="space-y-1 rounded-xl border border-white/5 bg-ink-800/40 p-3">
+          <p className="flex items-center gap-2 text-xs font-medium text-slate-300">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-neon-amber" />
+            Notes
+          </p>
+          <ul className="list-disc space-y-0.5 pl-5 text-xs text-slate-400">
+            {fit.warnings.map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -119,6 +211,7 @@ function ResultPanel({ out }: { out: ImproveOutput }) {
           </p>
         )}
       </Card>
+      {out.fit && <FitReport fit={out.fit} />}
       <Card className="space-y-3 p-5">
         <SectionHeading>Preview</SectionHeading>
         <pre className="no-scrollbar max-h-[28rem] overflow-auto rounded-xl border border-white/5 bg-ink-950/80 p-4 font-mono text-xs leading-relaxed text-slate-300">
@@ -200,6 +293,7 @@ function TemplatePicker({
               <span className="text-[11px] leading-snug text-slate-500">
                 {t.description}
               </span>
+              {t.budget && <BudgetChips budget={t.budget} />}
               <span className="flex items-center gap-1 text-[10px] text-slate-500">
                 <ShieldCheck className="h-3 w-3 shrink-0" />
                 {t.atsNote}
