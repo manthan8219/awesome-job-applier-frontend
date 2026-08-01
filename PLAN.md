@@ -73,7 +73,7 @@
 ### 🔵 Product leaps (advisory)
 
 - [ ] Profession-aware onboarding (doctor/engineer/designer…)
-- [ ] Pipeline kanban: apply → replied → interview → offer (+ reminders)
+- [x] Pipeline kanban: apply → replied → interview → offer — `PipelineBoard` on Jobs (List | Board toggle), move cards via select, persists via the outcome API (KAN-41, PR ready)
 - [ ] Analytics: response rate, conversion, per-provider yield, CSV export
 - [ ] Notifications: run summaries + daily digests via existing Discord/Telegram/email notifier
 - [ ] Browser bookmarklet / extension: "send this job to Nexus"
