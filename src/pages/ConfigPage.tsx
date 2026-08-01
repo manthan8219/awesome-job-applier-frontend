@@ -12,8 +12,9 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { PageLoader } from '@/components/ui/PageLoader';
-import { TagInput } from '@/components/config/TagInput';
+import { NotifySettings } from '@/components/config/NotifySettings';
 import { ResumeUpload } from '@/components/config/ResumeUpload';
+import { TagInput } from '@/components/config/TagInput';
 import { api } from '@/lib/api';
 import { backfilledLabels, contactPatch } from '@/lib/resume-backfill';
 import { useConfig } from '@/hooks/useConfig';
@@ -1138,6 +1139,12 @@ export default function ConfigPage() {
           Requires your Email + Gmail app password (Outreach section above).
           Notifications are sent by the backend.
         </p>
+      </Card>
+
+      {/* 10. Notifications */}
+      <Card className="space-y-4 p-5">
+        <SectionHeading>Notifications</SectionHeading>
+        <NotifySettings />
       </Card>
 
       {/* Save indicator */}
