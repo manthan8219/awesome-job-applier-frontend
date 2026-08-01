@@ -53,6 +53,15 @@ export interface Application {
   outcome: Outcome;
   outcomeAt: string;
   approved?: boolean; // user approved this queued job for a real apply
+  /**
+   * Audit of exactly what was submitted to the employer on apply (KAN-33).
+   * Present only when the backend recorded it.
+   */
+  submittedPayload?: {
+    profile?: Record<string, string>;
+    resume?: { filename?: string; checksum?: string };
+    answers?: Array<{ question: string; answer: string; aiGenerated?: boolean }>;
+  };
 }
 
 /** Onboarding-relevant subset of config.Config. */

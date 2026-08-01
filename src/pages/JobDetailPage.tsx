@@ -8,6 +8,7 @@ import { DotBadge } from '@/components/ui/DotBadge';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { ConfirmApplyDialog } from '@/components/review/ConfirmApplyDialog';
 import { KeywordGapPanel } from '@/components/jobs/KeywordGapPanel';
+import { SubmittedPayloadCard } from '@/components/jobs/SubmittedPayloadCard';
 import { useApplications } from '@/hooks/useApplications';
 import { useApplySelected } from '@/hooks/useApplySelected';
 import { useConfig } from '@/hooks/useConfig';
@@ -221,6 +222,8 @@ export default function JobDetailPage() {
             {jobDescription(app)}
           </p>
         </Card>
+
+        {isApplied && <SubmittedPayloadCard app={app} />}
 
         {isApplied && app.outcomeAt && (
           <p className="font-mono text-xs text-slate-600">
