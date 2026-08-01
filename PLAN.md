@@ -79,6 +79,17 @@
 - [x] Browser bookmarklet — `/bookmarklet` installer page; pre-fills `/jobs/new` from the page title/URL (KAN-45)
 - [x] Multi-user / auth + cloud sync — **deferred by decision (2026-08-01)**. Nexus ships as a single-user control plane; multi-user is a separate architecture project if ever pursued.
 
+### ✅ Jira batch 2026-08-01 (parallel worktree delivery)
+
+- [x] **KAN-21** live keyword-gap panel on job detail — `lib/keywords.ts` extract/diff, `useKeywordGap`, `KeywordGapPanel` (matched/missing chips, one-click add to skills). PR #24
+- [x] **KAN-29** guided reply-probability feed + response-rate copy — `lib/opportunities.ts` (fit×freshness×stage), `ReplyProbabilityFeed` on Dashboard, copy shift across Dashboard/Jobs/onboarding. PR #25
+- [x] **KAN-20** auto-tailor knobs surfaced on Config — backend engine hook was already merged; added the Tailoring card (`tailorPerJob` toggle + `tailorMaxRounds`). PR #23
+- [x] **KAN-28** referral-ask outreach variant — backend setup API exposes `referralAsk`/templates (PR #20) + Outreach Setup UI with custom subject/body templates (PR #26); drafting uses referral templates when enabled
+- [x] **KAN-33** record + surface the exact application payload — provider `ApplyResult.Payload` capture (greenhouse/lever), additive `submitted_payload` column + API exposure (PR #21), collapsible `SubmittedPayloadCard` on job detail (PR #27)
+- [x] **KAN-17** Outreach/Contacts/Companies real-API wiring — verified end-to-end (05-other-pages spec) and closed
+- [x] **KAN-30** dismiss/archive — already shipped as KAN-31; verified (07-dismiss spec) and closed as duplicate
+- Every branch gated: lint, build, vitest (148–161), full Playwright suite (22 specs), contract (44), backend `go build/vet/test`. 7 PRs (#23–27 frontend, #20–21 backend) squash-merged to `main`.
+
 ### 🔧 Repo hygiene
 
 - [x] Push backend `feat/auto-apply-providers` branch — obsolete: its API fixes + `cmd/e2e-seed` all landed via proper PRs; the stale remote branch can be deleted
