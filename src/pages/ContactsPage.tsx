@@ -156,6 +156,7 @@ export default function ContactsPage() {
           <button
             key={s}
             type="button"
+            aria-pressed={sub === s}
             onClick={() => setSub(s)}
             className={cn(
               'rounded-xl border px-3 py-1.5 text-xs font-medium transition-all',

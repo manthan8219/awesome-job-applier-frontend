@@ -117,4 +117,17 @@ describe('ContactsPage', () => {
 
     expect(await screen.findByText(/no contacts found/i)).toBeInTheDocument();
   });
+
+  it('marks the active tab with aria-pressed', async () => {
+    vi.spyOn(api, 'getSavedContacts').mockResolvedValue([]);
+
+    renderPage();
+
+    const searchTab = await screen.findByRole('button', { name: /^search$/i });
+    expect(searchTab).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /^saved$/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
 });

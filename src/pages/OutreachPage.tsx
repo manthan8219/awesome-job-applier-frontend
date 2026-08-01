@@ -404,6 +404,7 @@ export default function OutreachPage() {
           <button
             key={t.value}
             type="button"
+            aria-pressed={sub === t.value}
             onClick={() => setSub(t.value)}
             className={cn(
               'rounded-xl border px-3 py-1.5 text-xs font-medium transition-all',
