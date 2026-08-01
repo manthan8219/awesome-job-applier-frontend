@@ -58,7 +58,7 @@
 ### 🟡 Core flow completion
 
 - [x] Manual "Add a job" — `JobNewPage` at `/jobs/new` (role/company/url/location/remote → review queue) + `Add job` button on Jobs page. **Requires backend `POST /api/jobs`** (added locally in `../terminal-job` — needs committing there)
-- [ ] Dismiss/archive action on queued rows
+- [x] Dismiss/archive action on queued rows — X button marks job `skipped` via backend `POST /api/jobs/{id}/dismiss` (added locally in `../terminal-job`)
 - [ ] Approve + apply from job detail page
 - [ ] Wizard completeness: optional resume + explicit consent on first run
 

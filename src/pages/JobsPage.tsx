@@ -8,6 +8,7 @@ import {
   Plus,
   Rocket,
   Search,
+  X,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { DotBadge } from '@/components/ui/DotBadge';
@@ -20,6 +21,7 @@ import { useApplications } from '@/hooks/useApplications';
 import { useSetOutcome } from '@/hooks/useSetOutcome';
 import { useSetApplicationApproved } from '@/hooks/useSetApplicationApproved';
 import { useApplySelected } from '@/hooks/useApplySelected';
+import { useDismissJob } from '@/hooks/useDismissJob';
 import { useConfig } from '@/hooks/useConfig';
 import { useUpdateConfig } from '@/hooks/useUpdateConfig';
 import { APP_STATUS_META, OUTCOME_CYCLE, OUTCOME_META } from '@/constants';
@@ -47,10 +49,12 @@ function JobRow({
   app,
   onCycle,
   onToggleApproved,
+  onDismiss,
 }: {
   app: Application;
   onCycle: (a: Application) => void;
   onToggleApproved: (a: Application) => void;
+  onDismiss: (a: Application) => void;
 }) {
   const s = APP_STATUS_META[app.status];
   const o = OUTCOME_META[app.outcome];
@@ -76,6 +80,17 @@ function JobRow({
           )}
         >
           <Check className="h-3.5 w-3.5" />
+        </button>
+      )}
+      {canApprove && (
+        <button
+          type="button"
+          onClick={() => onDismiss(app)}
+          aria-label={`Dismiss ${app.role} from queue`}
+          title="Dismiss from queue"
+          className="grid h-6 w-6 shrink-0 place-items-center rounded-md border border-transparent text-slate-600 transition-colors hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-400"
+        >
+          <X className="h-3.5 w-3.5" />
         </button>
       )}
       <Link to={`/jobs/${app.id}`} className="min-w-0 flex-1">
@@ -130,6 +145,7 @@ export default function JobsPage() {
   const { data, isLoading } = useApplications(query);
   const setOutcome = useSetOutcome();
   const setApproved = useSetApplicationApproved();
+  const dismissJob = useDismissJob();
   const applySelected = useApplySelected();
   const { data: cfg } = useConfig();
   const saveConfig = useUpdateConfig();
@@ -300,6 +316,7 @@ export default function JobsPage() {
                 app={a}
                 onCycle={cycle}
                 onToggleApproved={toggleApproved}
+                onDismiss={(app) => dismissJob.mutate(app.id)}
               />
             ))}
           </Card>

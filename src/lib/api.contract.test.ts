@@ -260,6 +260,24 @@ describe.skipIf(!backendAvailable)(
         const after = await api.getApplications('');
         expect(after.some((a) => a.url === url)).toBe(true);
       });
+
+      it('dismisses a queued job so it leaves the queue', async () => {
+        const created = await api.createApplication({
+          role: 'QA Engineer',
+          company: 'Acme Health',
+          url: 'https://acme.health/careers/qa-dismiss',
+          location: '',
+          remote: true,
+        });
+        expect(created.status).toBe('queued');
+
+        await api.dismissApplication(created.id);
+
+        const after = await api.getApplications('');
+        const dismissed = after.find((a) => a.id === created.id);
+        expect(dismissed?.status).toBe('skipped');
+        expect(dismissed?.reason).toBe('dismissed by user');
+      });
     });
 
     describe('companies + contacts', () => {
