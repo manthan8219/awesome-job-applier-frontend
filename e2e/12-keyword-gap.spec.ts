@@ -27,7 +27,7 @@ test('keyword-gap panel: diffs the job description against resume skills and one
   // The seeded skill "Go" is covered; the fallback JD text contributes other
   // keywords that are still missing → an honest gap count.
   await expect(page.getByText(/matched · \d+ missing/i)).toBeVisible();
-  await expect(page.getByText('go')).toBeVisible();
+  await expect(page.getByText('go', { exact: true })).toBeVisible();
 
   // One-click add flips a missing keyword to covered (skills now includes it).
   const addBackend = page.getByRole('button', { name: /add backend to skills/i });
@@ -37,5 +37,5 @@ test('keyword-gap panel: diffs the job description against resume skills and one
   await expect(
     page.getByRole('button', { name: /add backend to skills/i }),
   ).toHaveCount(0);
-  await expect(page.getByText('backend')).toBeVisible();
+  await expect(page.getByText('backend', { exact: true })).toBeVisible();
 });
