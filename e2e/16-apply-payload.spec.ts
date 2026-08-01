@@ -7,8 +7,11 @@ test('submitted payload audit renders on an applied job detail (KAN-33)', async 
   await ensureOnboarded();
   await page.goto('/jobs');
 
-  // The seeded applied job (Registered Nurse) carries a deterministic payload.
-  await page.getByRole('link', { name: /registered nurse/i }).click();
+  // The seeded applied job (Registered Nurse @ Acme Health, ashby) carries a
+  // deterministic payload — filter to it (the manual-job spec adds another RN row).
+  await page
+    .getByRole('link', { name: /registered nurse.*ashby/i })
+    .click();
   await expect(
     page.getByRole('heading', { name: /submitted payload/i }),
   ).toBeVisible();
