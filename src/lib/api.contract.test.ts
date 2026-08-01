@@ -270,6 +270,18 @@ describe.skipIf(!backendAvailable)(
     });
 
     describe('outreach', () => {
+      it('getOutreachSetup normalizes backend keys into the frontend contract', async () => {
+        // The backend sends maxEmailsDay/maxLinkedInDay; the client must expose
+        // maxEmailsPerDay/maxLinkedInPerDay with real numeric values.
+        const setup = await api.getOutreachSetup();
+        expect(typeof setup.consent).toBe('boolean');
+        expect(typeof setup.maxEmailsPerDay).toBe('number');
+        expect(setup.maxEmailsPerDay).toBeGreaterThan(0);
+        expect(typeof setup.maxLinkedInPerDay).toBe('number');
+        expect(typeof setup.aiCompose).toBe('boolean');
+        expect(['confirm', 'queue', 'auto']).toContain(setup.mode);
+      });
+
       it('getOutreachItems resolves to an array', async () => {
         expect(Array.isArray(await api.getOutreachItems())).toBe(true);
       });
