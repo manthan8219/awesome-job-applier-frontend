@@ -10,6 +10,7 @@ import type { ResumeTemplate } from '@/types/resume';
 export const SAMPLE_RESUME_PREVIEW = {
   name: 'Maya Okonkwo',
   headline: 'Senior Product Engineer',
+  contact: 'maya@okonkwo.dev · San Francisco, CA',
   summary:
     'Product engineer with 8+ years building high-scale web platforms. Led a five-person team shipping a payments platform used by 2M customers.',
   skills: ['Go', 'TypeScript', 'React', 'PostgreSQL', 'Kubernetes', 'gRPC', 'CI/CD'],
@@ -42,19 +43,75 @@ const RAIL_SECTION_KEYS = new Set(['skills', 'education']);
 function SectionHeading({
   label,
   accentHex,
+  sectionStyle,
+  onDark,
 }: {
   label: string;
   accentHex: string;
+  sectionStyle?: string;
+  onDark?: boolean;
 }) {
+  const headColor = sectionStyle === 'soft' ? '#94a3b8' : accentHex;
+  const textColor = onDark ? '#ffffff' : headColor;
+  const ruleCls = onDark ? 'bg-white/25' : 'bg-ink-950/20';
+  const common =
+    'text-[4.5px] font-bold uppercase leading-none tracking-[0.08em]';
+  if (sectionStyle === 'marker') {
+    return (
+      <div className="mb-[2px] flex flex-col gap-[1px]">
+        <div className="flex items-center gap-[2px]">
+          <span
+            className="h-[3px] w-[3px] shrink-0"
+            style={{ backgroundColor: onDark ? '#ffffff' : accentHex }}
+          />
+          <p className={common} style={{ color: textColor }}>
+            {label}
+          </p>
+        </div>
+        <div className={cn('h-px w-full', ruleCls)} />
+      </div>
+    );
+  }
+  if (sectionStyle === 'ruleAbove') {
+    return (
+      <div className="mb-[2px] flex flex-col gap-[1px]">
+        <div
+          className="h-px w-full"
+          style={{
+            backgroundColor: onDark ? 'rgba(255,255,255,0.4)' : accentHex,
+          }}
+        />
+        <p className={common} style={{ color: textColor }}>
+          {label}
+        </p>
+      </div>
+    );
+  }
+  if (sectionStyle === 'soft') {
+    return (
+      <div className="mb-[2px]">
+        <p className="text-[4.5px] font-semibold leading-none" style={{ color: '#94a3b8' }}>
+          {label}
+        </p>
+      </div>
+    );
+  }
+  if (sectionStyle === 'caps') {
+    return (
+      <div className="mb-[2px]">
+        <p className={common} style={{ color: textColor }}>
+          {label}
+        </p>
+      </div>
+    );
+  }
+  // plain: uppercase heading + thin rule below
   return (
     <div className="mb-[2px] flex flex-col gap-[1px]">
-      <p
-        className="text-[4.5px] font-bold uppercase leading-none tracking-[0.08em]"
-        style={{ color: accentHex }}
-      >
+      <p className={common} style={{ color: textColor }}>
         {label}
       </p>
-      <div className="h-px w-full bg-ink-950/20" />
+      <div className={cn('h-px w-full', ruleCls)} />
     </div>
   );
 }
@@ -62,20 +119,25 @@ function SectionHeading({
 function SectionContent({
   sectionKey,
   accentHex,
+  onDark,
 }: {
   sectionKey: string;
   accentHex: string;
+  onDark?: boolean;
 }) {
+  const body = onDark ? 'text-white/90' : 'text-ink-950/90';
+  const dim = onDark ? 'text-white/50' : 'text-ink-950/50';
+  const bulletColor = onDark ? '#ffffff' : accentHex;
   switch (sectionKey) {
     case 'summary':
       return (
-        <p className="text-[4.5px] leading-[1.35] text-ink-950/90">
+        <p className={cn('text-[4.5px] leading-[1.35]', body)}>
           {SAMPLE_RESUME_PREVIEW.summary}
         </p>
       );
     case 'skills':
       return (
-        <p className="text-[4.5px] leading-[1.4] text-ink-950/90">
+        <p className={cn('text-[4.5px] leading-[1.4]', body)}>
           {SAMPLE_RESUME_PREVIEW.skills.join('  ·  ')}
         </p>
       );
@@ -88,16 +150,16 @@ function SectionContent({
                 <p className="truncate text-[5px] font-bold leading-none text-ink-950">
                   {role.title} · {role.org}
                 </p>
-                <p className="shrink-0 text-[3px] leading-none text-ink-950/50">
+                <p className={cn('shrink-0 text-[3px] leading-none', dim)}>
                   {role.period}
                 </p>
               </div>
               {role.bullets.slice(0, 2).map((bullet) => (
                 <p
                   key={bullet}
-                  className="flex gap-[2px] text-[4px] leading-[1.3] text-ink-950/85"
+                  className={cn('flex gap-[2px] text-[4px] leading-[1.3]', body)}
                 >
-                  <span className="text-[3px]" style={{ color: accentHex }}>
+                  <span className="text-[3px]" style={{ color: bulletColor }}>
                     •
                   </span>
                   <span>{bullet}</span>
@@ -111,7 +173,7 @@ function SectionContent({
       return (
         <div className="space-y-[1px]">
           {SAMPLE_RESUME_PREVIEW.education.map((line) => (
-            <p key={line} className="text-[4.5px] leading-[1.35] text-ink-950/90">
+            <p key={line} className={cn('text-[4.5px] leading-[1.35]', body)}>
               {line}
             </p>
           ))}
@@ -122,22 +184,28 @@ function SectionContent({
   }
 }
 
+
 /**
  * A miniature, A4-proportioned sample resume drawn from the template manifest.
  * Every visual token (accent, fonts, header alignment, rule, rail side,
- * section order, one-page density) comes from the template the backend serves,
- * so the gallery card previews the real renderer's output.
+ * section order, section style, one-page density) comes from the template the
+ * backend serves, so the gallery card previews the real renderer's output.
  */
 export function TemplatePreview({ template }: { template: ResumeTemplate }) {
   const {
     layout,
     railSide,
+    railBackground,
     bodyFont,
     headerAlign,
     showRule,
     accentHex,
     onePage,
     sections,
+    sectionStyle,
+    nameStyle,
+    contactLine,
+    columnRatio,
   } = template;
   const isSidebar = layout === 'sidebar';
   const railRight = railSide === 'right';
@@ -149,12 +217,30 @@ export function TemplatePreview({ template }: { template: ResumeTemplate }) {
       : bodyFont === 'serif'
         ? 'font-serif'
         : 'font-sans';
-  const headerAlignCls =
-    headerAlign === 'center' ? 'items-center text-center' : 'items-start text-left';
+  const centered = nameStyle === 'centered' || headerAlign === 'center';
+  const headerAlignCls = centered
+    ? 'items-center text-center'
+    : 'items-start text-left';
+  const nameColor = nameStyle === 'colored' ? accentHex : undefined;
+  const railDark = railBackground === 'dark';
+  const railAccent = railBackground === 'accent';
+  const railOnDark = railDark || railAccent;
+  const railBg =
+    railDark || railAccent
+      ? railAccent
+        ? accentHex
+        : '#111827'
+      : `${accentHex}14`;
+  const railWidth = columnRatio
+    ? `${Math.round((1 - columnRatio) * 100)}%`
+    : '38%';
 
   const header = (
     <header className={cn('flex flex-col gap-[2px]', headerAlignCls)}>
-      <p className="text-[11px] font-bold leading-none tracking-wide text-ink-950">
+      <p
+        className="text-[11px] font-bold leading-none tracking-wide"
+        style={nameColor ? { color: nameColor } : undefined}
+      >
         {SAMPLE_RESUME_PREVIEW.name}
       </p>
       <p
@@ -163,6 +249,11 @@ export function TemplatePreview({ template }: { template: ResumeTemplate }) {
       >
         {SAMPLE_RESUME_PREVIEW.headline}
       </p>
+      {contactLine && (
+        <p className="text-[3.5px] leading-none text-ink-950/60">
+          {SAMPLE_RESUME_PREVIEW.contact}
+        </p>
+      )}
       {showRule !== false && (
         <div
           className="mt-[2px] h-px w-full"
@@ -175,13 +266,22 @@ export function TemplatePreview({ template }: { template: ResumeTemplate }) {
   const rail = (
     <div
       data-testid="template-preview-rail"
-      className="flex w-[38%] shrink-0 flex-col gap-[3px] rounded-[2px] p-[3px]"
-      style={{ backgroundColor: `${accentHex}14` }}
+      className="flex shrink-0 flex-col gap-[3px] rounded-[2px] p-[3px]"
+      style={{ width: railWidth, backgroundColor: railBg }}
     >
       {railSections.map((sec) => (
         <section key={sec.key}>
-          <SectionHeading label={sec.label} accentHex={accentHex} />
-          <SectionContent sectionKey={sec.key} accentHex={accentHex} />
+          <SectionHeading
+            label={sec.label}
+            accentHex={accentHex}
+            sectionStyle={sectionStyle}
+            onDark={railOnDark}
+          />
+          <SectionContent
+            sectionKey={sec.key}
+            accentHex={accentHex}
+            onDark={railOnDark}
+          />
         </section>
       ))}
     </div>
@@ -208,7 +308,11 @@ export function TemplatePreview({ template }: { template: ResumeTemplate }) {
           <main className="flex min-w-0 flex-1 flex-col gap-[4px]">
             {mainSections.map((sec) => (
               <section key={sec.key}>
-                <SectionHeading label={sec.label} accentHex={accentHex} />
+                <SectionHeading
+                  label={sec.label}
+                  accentHex={accentHex}
+                  sectionStyle={sectionStyle}
+                />
                 <SectionContent sectionKey={sec.key} accentHex={accentHex} />
               </section>
             ))}
@@ -219,3 +323,4 @@ export function TemplatePreview({ template }: { template: ResumeTemplate }) {
     </div>
   );
 }
+

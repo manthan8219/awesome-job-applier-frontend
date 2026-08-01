@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ImproveTab } from './ImproveTab';
 import { api } from '@/lib/api';
 import { makeConfig } from '@/test/fixtures';
@@ -199,7 +199,12 @@ describe('ImproveTab', () => {
         skills: ['Go', 'PostgreSQL'],
         suitableRoles: ['Senior Backend Engineer'],
       },
-      contact: { firstName: 'Ada', lastName: 'Lovelace' },
+      contact: {
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        email: 'ada@example.com',
+        phone: '+1 555 0100',
+      },
     } as never);
     const preview = vi
       .spyOn(api, 'previewTemplateWithData')
@@ -216,9 +221,11 @@ describe('ImproveTab', () => {
     fireEvent.click(button);
 
     await waitFor(() =>
-      expect(preview).toHaveBeenCalledWith('classic', {
+      expect(preview).toHaveBeenCalledWith('jake', {
         fullName: 'Ada Lovelace',
         headline: 'Senior Backend Engineer',
+        email: 'ada@example.com',
+        phone: '+1 555 0100',
         summary: 'Backend engineer with 6 years shipping Go services.',
         skills: ['Go', 'PostgreSQL'],
         experience: [
@@ -236,7 +243,7 @@ describe('ImproveTab', () => {
     expect(previewObject).toHaveAttribute('data', 'blob:mock-url');
   });
 
-  it('renders template cards, defaults to Classic, and passes the selection', async () => {
+  it('renders template cards, defaults to Jake, and passes the selection', async () => {
     vi.spyOn(api, 'getConfig').mockResolvedValue(
       makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
     );
@@ -246,21 +253,28 @@ describe('ImproveTab', () => {
 
     renderTab();
 
-    // All templates are offered; Classic is selected by default.
-    // (/^classic/ so Monochrome's "quiet, classic" copy doesn't collide.)
-    const classic = await screen.findByRole('button', { name: /^classic/i });
-    expect(classic).toHaveAttribute('aria-pressed', 'true');
-    for (const name of ['Modern', 'Sidebar', 'Compact', 'Executive', 'Developer', 'Split']) {
+    // All templates are offered; Jake is selected by default.
+    const jake = await screen.findByRole('button', { name: /^jake/i });
+    expect(jake).toHaveAttribute('aria-pressed', 'true');
+    for (const name of [
+      'Awesome-CV',
+      'Deedy',
+      'McDowell',
+      'BillRyan',
+      'Kendall',
+      'Macchiato',
+      'Banking',
+    ]) {
       expect(screen.getByRole('button', { name: new RegExp(name, 'i') })).toHaveAttribute(
         'aria-pressed',
         'false',
       );
     }
 
-    // Picking Sidebar flips the selection and is passed to the backend.
-    fireEvent.click(screen.getByRole('button', { name: /sidebar/i }));
-    expect(classic).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByRole('button', { name: /sidebar/i })).toHaveAttribute(
+    // Picking Deedy flips the selection and is passed to the backend.
+    fireEvent.click(screen.getByRole('button', { name: /deedy/i }));
+    expect(jake).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: /deedy/i })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -268,7 +282,7 @@ describe('ImproveTab', () => {
     await enableAndClickGenerate();
     await waitFor(() =>
       expect(improve).toHaveBeenCalledWith(
-        expect.objectContaining({ templateId: 'sidebar' }),
+        expect.objectContaining({ templateId: 'deedy' }),
       ),
     );
   });

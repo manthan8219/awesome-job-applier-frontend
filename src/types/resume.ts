@@ -81,6 +81,9 @@ export interface ImproveOutput {
 export interface PreviewResumeDoc {
   fullName?: string;
   headline?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
   summary?: string;
   skills?: string[];
   experience?: {
@@ -168,25 +171,127 @@ export interface ResumeTemplate {
   showRule?: boolean;
   /** Content budget this template fits on its target page count. */
   budget?: ResumeSpaceBudget;
+  /** Section-heading style: plain | caps | marker | ruleAbove | soft. */
+  sectionStyle?: 'plain' | 'caps' | 'marker' | 'ruleAbove' | 'soft';
+  /** Name-block style: plain | centered | colored. */
+  nameStyle?: 'plain' | 'centered' | 'colored';
+  /** Whether the header draws an email · phone · location contact line. */
+  contactLine?: boolean;
+  /** Main-column width fraction for sidebar layouts (Deedy = 0.76). */
+  columnRatio?: number;
+  /** Sidebar rail fill: dark | accent | tint. */
+  railBackground?: 'dark' | 'accent' | 'tint';
+  /** The open-source design this template adapts (attribution). */
+  source?: string;
 }
 
 /** Offline fallback registry — mirrors the backend `GET /resume/templates`. */
 export const RESUME_TEMPLATES: ResumeTemplate[] = [
   {
-    id: 'classic',
-    name: 'Classic',
+    id: 'jake',
+    name: 'Jake',
     description:
-      'Clean single-column flow with standard headings. The safest choice for ATS parsing.',
+      'The recruiter-favorite clean single column — small-caps section heads, tight spacing, zero gimmicks. Adapted from jakegut/resume.',
     layout: 'single',
+    sectionStyle: 'caps',
     sections: [
       { key: 'summary', label: 'Summary' },
-      { key: 'skills', label: 'Skills' },
       { key: 'experience', label: 'Experience' },
+      { key: 'skills', label: 'Skills' },
       { key: 'education', label: 'Education' },
     ],
-    accentHex: '#059669',
+    accentHex: '#334155',
+    headerAlign: 'left',
+    showRule: false,
+    onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 5,
+      maxSkills: 14,
+      maxEducation: 2,
+      charsPerLine: 100,
+    },
+    source: 'github.com/jakegut/resume (MIT)',
+    atsNote: 'ATS-perfect — the most widely recommended clean LaTeX template.',
+  },
+  {
+    id: 'awesome-cv',
+    name: 'Awesome-CV',
+    description:
+      'Professional sections with a filled accent marker and a full-width rule. Adapted from posquit0/Awesome-CV.',
+    layout: 'single',
+    sectionStyle: 'marker',
+    sections: [
+      { key: 'summary', label: 'Summary' },
+      { key: 'experience', label: 'Experience' },
+      { key: 'education', label: 'Education' },
+      { key: 'skills', label: 'Skills' },
+    ],
+    accentHex: '#00539b',
+    headerAlign: 'left',
+    showRule: false,
+    onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 5,
+      maxSkills: 14,
+      maxEducation: 2,
+      charsPerLine: 95,
+    },
+    source: 'github.com/posquit0/Awesome-CV (LPPL)',
+    atsNote: 'ATS-safe — single column with standard section names.',
+  },
+  {
+    id: 'deedy',
+    name: 'Deedy',
+    description:
+      'One-page asymmetric two-column — dates and skills in a narrow rail, experience wide. Adapted from deedy/Deedy-Resume.',
+    layout: 'sidebar',
+    railSide: 'left',
+    columnRatio: 0.76,
+    onePage: true,
+    sectionStyle: 'plain',
+    sections: [
+      { key: 'experience', label: 'Experience' },
+      { key: 'education', label: 'Education' },
+      { key: 'skills', label: 'Skills' },
+    ],
+    accentHex: '#111827',
     headerAlign: 'left',
     showRule: true,
+    budget: {
+      targetPages: 1,
+      maxSummaryLines: 2,
+      maxBulletsPerRole: 3,
+      maxRoles: 4,
+      maxSkills: 10,
+      maxEducation: 2,
+      charsPerLine: 75,
+    },
+    source: 'github.com/deedy/Deedy-Resume (Apache-2.0)',
+    atsNote:
+      'One-page asymmetric two-column — great for new grads; two columns can trip some ATS systems.',
+  },
+  {
+    id: 'mcdowell',
+    name: 'McDowell',
+    description:
+      'Clean single column with generous whitespace and soft gray section heads. Adapted from dnl-blkv/mcdowell-cv.',
+    layout: 'single',
+    sectionStyle: 'soft',
+    sections: [
+      { key: 'summary', label: 'Summary' },
+      { key: 'experience', label: 'Experience' },
+      { key: 'skills', label: 'Skills' },
+      { key: 'education', label: 'Education' },
+    ],
+    accentHex: '#6b7280',
+    headerAlign: 'left',
+    showRule: false,
     onePage: false,
     budget: {
       targetPages: 0,
@@ -197,266 +302,51 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       maxEducation: 2,
       charsPerLine: 95,
     },
-    atsNote: 'Safest for ATS — single column, standard section names.',
-  },
-  {
-    id: 'modern',
-    name: 'Modern',
-    description:
-      'Centered header with a violet accent. Single column, slightly more whitespace.',
-    layout: 'single',
-    sections: [
-      { key: 'summary', label: 'Summary' },
-      { key: 'skills', label: 'Skills' },
-      { key: 'experience', label: 'Experience' },
-      { key: 'education', label: 'Education' },
-    ],
-    accentHex: '#8b5cf6',
-    headerAlign: 'center',
-    showRule: true,
-    onePage: false,
-    budget: {
-      targetPages: 0,
-      maxSummaryLines: 3,
-      maxBulletsPerRole: 4,
-      maxRoles: 5,
-      maxSkills: 12,
-      maxEducation: 2,
-      charsPerLine: 90,
-    },
+    source: 'github.com/dnl-blkv/mcdowell-cv (MIT)',
     atsNote: 'ATS-safe — single column with standard section names.',
   },
   {
-    id: 'executive',
-    name: 'Executive',
+    id: 'billryan',
+    name: 'BillRyan',
     description:
-      'Serif type with a muted steel accent — formal, senior-leader tone.',
+      'Elegant minimal single column with a serif body. Adapted from billryan/resume.',
     layout: 'single',
-    sections: [
-      { key: 'summary', label: 'Summary' },
-      { key: 'skills', label: 'Skills' },
-      { key: 'experience', label: 'Experience' },
-      { key: 'education', label: 'Education' },
-    ],
-    accentHex: '#475569',
-    headerAlign: 'center',
-    showRule: false,
-    onePage: false,
-    budget: {
-      targetPages: 0,
-      maxSummaryLines: 3,
-      maxBulletsPerRole: 4,
-      maxRoles: 5,
-      maxSkills: 12,
-      maxEducation: 2,
-      charsPerLine: 90,
-    },
     bodyFont: 'serif',
-    atsNote: 'ATS-safe — single column with standard section names.',
-  },
-  {
-    id: 'minimal',
-    name: 'Minimal',
-    description:
-      'Bare-bones single column with generous whitespace and a soft slate accent.',
-    layout: 'single',
+    sectionStyle: 'plain',
     sections: [
       { key: 'summary', label: 'Summary' },
       { key: 'skills', label: 'Skills' },
       { key: 'experience', label: 'Experience' },
       { key: 'education', label: 'Education' },
     ],
-    accentHex: '#94a3b8',
-    headerAlign: 'left',
-    showRule: false,
-    onePage: false,
-    budget: {
-      targetPages: 0,
-      maxSummaryLines: 2,
-      maxBulletsPerRole: 3,
-      maxRoles: 4,
-      maxSkills: 10,
-      maxEducation: 2,
-      charsPerLine: 90,
-    },
-    atsNote: 'ATS-safe — single column with standard section names.',
-  },
-  {
-    id: 'academic',
-    name: 'Academic',
-    description:
-      'Education-forward with serif type and a deep navy accent — built for academia.',
-    layout: 'single',
-    sections: [
-      { key: 'summary', label: 'Summary' },
-      { key: 'education', label: 'Education' },
-      { key: 'experience', label: 'Experience' },
-      { key: 'skills', label: 'Skills' },
-    ],
-    accentHex: '#1e3a8a',
-    headerAlign: 'center',
-    showRule: true,
-    onePage: false,
-    budget: {
-      targetPages: 0,
-      maxSummaryLines: 3,
-      maxBulletsPerRole: 4,
-      maxRoles: 5,
-      maxSkills: 12,
-      maxEducation: 3,
-      charsPerLine: 85,
-    },
-    bodyFont: 'serif',
-    atsNote: 'ATS-safe — single column with standard section names.',
-  },
-  {
-    id: 'developer',
-    name: 'Developer',
-    description:
-      'Monospace type with a lime accent — a terminal-flavoured look.',
-    layout: 'single',
-    sections: [
-      { key: 'summary', label: 'Summary' },
-      { key: 'skills', label: 'Skills' },
-      { key: 'experience', label: 'Experience' },
-      { key: 'education', label: 'Education' },
-    ],
-    accentHex: '#a3e635',
+    accentHex: '#0f172a',
     headerAlign: 'left',
     showRule: true,
     onePage: false,
     budget: {
       targetPages: 0,
-      maxSummaryLines: 2,
-      maxBulletsPerRole: 3,
-      maxRoles: 4,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 5,
       maxSkills: 14,
-      maxEducation: 2,
-      charsPerLine: 85,
-    },
-    bodyFont: 'mono',
-    atsNote: 'ATS-safe — single column with standard section names.',
-  },
-  {
-    id: 'sidebar',
-    name: 'Sidebar',
-    description:
-      'Two-column layout: skills and education in a left rail, experience as the main column.',
-    layout: 'sidebar',
-    railSide: 'left',
-    sections: [
-      { key: 'skills', label: 'Skills' },
-      { key: 'summary', label: 'Summary' },
-      { key: 'experience', label: 'Experience' },
-      { key: 'education', label: 'Education' },
-    ],
-    accentHex: '#22d3ee',
-    headerAlign: 'center',
-    showRule: true,
-    onePage: false,
-    budget: {
-      targetPages: 0,
-      maxSummaryLines: 3,
-      maxBulletsPerRole: 4,
-      maxRoles: 4,
-      maxSkills: 10,
-      maxEducation: 2,
-      charsPerLine: 60,
-    },
-    atsNote:
-      'Design-forward — two columns can confuse some ATS systems; use for roles where design matters.',
-  },
-  {
-    id: 'split',
-    name: 'Split',
-    description:
-      'Two-column layout: skills and education in a right rail, experience leads on the left.',
-    layout: 'sidebar',
-    railSide: 'right',
-    sections: [
-      { key: 'experience', label: 'Experience' },
-      { key: 'summary', label: 'Summary' },
-      { key: 'skills', label: 'Skills' },
-      { key: 'education', label: 'Education' },
-    ],
-    accentHex: '#f59e0b',
-    headerAlign: 'center',
-    showRule: true,
-    onePage: false,
-    budget: {
-      targetPages: 0,
-      maxSummaryLines: 3,
-      maxBulletsPerRole: 4,
-      maxRoles: 4,
-      maxSkills: 10,
-      maxEducation: 2,
-      charsPerLine: 60,
-    },
-    atsNote:
-      'Design-forward — two columns can confuse some ATS systems; use for roles where design matters.',
-  },
-  {
-    id: 'compact',
-    name: 'Compact',
-    description: 'Tighter spacing and smaller margins to fit more on one page.',
-    layout: 'single',
-    sections: [
-      { key: 'summary', label: 'Summary' },
-      { key: 'experience', label: 'Experience' },
-      { key: 'skills', label: 'Skills' },
-      { key: 'education', label: 'Education' },
-    ],
-    accentHex: '#38bdf8',
-    headerAlign: 'left',
-    showRule: true,
-    onePage: true,
-    budget: {
-      targetPages: 1,
-      maxSummaryLines: 2,
-      maxBulletsPerRole: 3,
-      maxRoles: 5,
-      maxSkills: 10,
       maxEducation: 2,
       charsPerLine: 100,
     },
-    atsNote: 'Optimized for one page — good for senior candidates.',
-  },
-  {
-    id: 'bold',
-    name: 'Bold',
-    description:
-      'Big centered header with a magenta accent — makes your name the hero.',
-    layout: 'single',
-    sections: [
-      { key: 'summary', label: 'Summary' },
-      { key: 'skills', label: 'Skills' },
-      { key: 'experience', label: 'Experience' },
-      { key: 'education', label: 'Education' },
-    ],
-    accentHex: '#ec4899',
-    headerAlign: 'center',
-    showRule: true,
-    onePage: false,
-    budget: {
-      targetPages: 0,
-      maxSummaryLines: 3,
-      maxBulletsPerRole: 4,
-      maxRoles: 5,
-      maxSkills: 12,
-      maxEducation: 2,
-      charsPerLine: 85,
-    },
+    source: 'github.com/billryan/resume (MIT)',
     atsNote: 'ATS-safe — single column with standard section names.',
   },
   {
-    id: 'monochrome',
-    name: 'Monochrome',
+    id: 'kendall',
+    name: 'Kendall',
     description:
-      'All-ink serif with a black accent and no rule — quiet, classic, universal.',
-    layout: 'single',
+      'Two-column with a dark sidebar rail for skills and education. Adapted from the JSON Resume Kendall theme.',
+    layout: 'sidebar',
+    railSide: 'left',
+    railBackground: 'dark',
+    sectionStyle: 'plain',
     sections: [
-      { key: 'summary', label: 'Summary' },
       { key: 'skills', label: 'Skills' },
+      { key: 'summary', label: 'Summary' },
       { key: 'experience', label: 'Experience' },
       { key: 'education', label: 'Education' },
     ],
@@ -468,28 +358,65 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       targetPages: 0,
       maxSummaryLines: 3,
       maxBulletsPerRole: 4,
-      maxRoles: 5,
-      maxSkills: 12,
+      maxRoles: 4,
+      maxSkills: 10,
       maxEducation: 2,
-      charsPerLine: 90,
+      charsPerLine: 60,
     },
-    bodyFont: 'serif',
-    atsNote: 'ATS-safe — single column with standard section names.',
+    source: 'jsonresume.org — Kendall (MIT)',
+    atsNote: 'Two columns can confuse some ATS systems; use for design-forward roles.',
   },
   {
-    id: 'nordic',
-    name: 'Nordic',
-    description: 'Clean scandi look — teal accent, left header and a thin rule.',
-    layout: 'single',
+    id: 'macchiato',
+    name: 'Macchiato',
+    description:
+      'Two-column with an accent-colored sidebar and accent name. Adapted from the JSON Resume Macchiato theme.',
+    layout: 'sidebar',
+    railSide: 'left',
+    railBackground: 'accent',
+    nameStyle: 'colored',
+    sectionStyle: 'plain',
     sections: [
-      { key: 'summary', label: 'Summary' },
       { key: 'skills', label: 'Skills' },
+      { key: 'summary', label: 'Summary' },
       { key: 'experience', label: 'Experience' },
       { key: 'education', label: 'Education' },
     ],
-    accentHex: '#0d9488',
+    accentHex: '#0f766e',
     headerAlign: 'left',
-    showRule: true,
+    showRule: false,
+    onePage: false,
+    budget: {
+      targetPages: 0,
+      maxSummaryLines: 3,
+      maxBulletsPerRole: 4,
+      maxRoles: 4,
+      maxSkills: 10,
+      maxEducation: 2,
+      charsPerLine: 60,
+    },
+    source: 'jsonresume.org — Macchiato (MIT)',
+    atsNote: 'Two columns can confuse some ATS systems; use for design-forward roles.',
+  },
+  {
+    id: 'banking',
+    name: 'Banking',
+    description:
+      'Centered name with a contact line and ruled section heads — the classic moderncv banking style.',
+    layout: 'single',
+    bodyFont: 'serif',
+    nameStyle: 'centered',
+    contactLine: true,
+    sectionStyle: 'ruleAbove',
+    sections: [
+      { key: 'summary', label: 'Summary' },
+      { key: 'experience', label: 'Experience' },
+      { key: 'skills', label: 'Skills' },
+      { key: 'education', label: 'Education' },
+    ],
+    accentHex: '#004d99',
+    headerAlign: 'center',
+    showRule: false,
     onePage: false,
     budget: {
       targetPages: 0,
@@ -498,14 +425,15 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       maxRoles: 5,
       maxSkills: 12,
       maxEducation: 2,
-      charsPerLine: 100,
+      charsPerLine: 90,
     },
+    source: 'moderncv — banking style (LPPL)',
     atsNote: 'ATS-safe — single column with standard section names.',
   },
 ];
 
 /** Default template id (also the backend fallback for missing ids). */
-export const TEMPLATE_DEFAULT_ID = 'classic';
+export const TEMPLATE_DEFAULT_ID = 'jake';
 
 /** Input to resume generation (mirrors resume.ImproveInput, web-shaped). */
 export interface ImproveRequest {
