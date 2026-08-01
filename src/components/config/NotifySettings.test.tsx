@@ -122,4 +122,35 @@ describe('NotifySettings', () => {
       await screen.findByText('no notification channels configured'),
     ).toBeInTheDocument();
   });
+
+  it('sends a run-summary digest and reports the channel count', async () => {
+    vi.spyOn(api, 'getNotifyChannels').mockResolvedValue(channels);
+    const sendSummary = vi
+      .spyOn(api, 'sendNotifySummary')
+      .mockResolvedValue({ sent: 2 });
+
+    renderSettings();
+
+    const button = await screen.findByRole('button', {
+      name: /send run summary/i,
+    });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+
+    expect(await screen.findByText(/digest sent to 2 channel/i)).toBeInTheDocument();
+    expect(sendSummary).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables the run-summary button when no channels are enabled', async () => {
+    vi.spyOn(api, 'getNotifyChannels').mockResolvedValue([
+      { id: 'discord', name: 'Discord', enabled: false },
+    ]);
+
+    renderSettings();
+
+    const button = await screen.findByRole('button', {
+      name: /send run summary/i,
+    });
+    expect(button).toBeDisabled();
+  });
 });

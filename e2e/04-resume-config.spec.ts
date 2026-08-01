@@ -53,3 +53,18 @@ test('config page loads and save-now persists to the backend', async ({
   await page.getByRole('button', { name: /save now/i }).click();
   await expect(page.getByText(/auto-saved/i)).toBeVisible();
 });
+
+test('config notifications: run-summary trigger renders (disabled without channels)', async ({
+  page,
+}) => {
+  await ensureOnboarded();
+  await page.goto('/config');
+
+  const summaryBtn = page.getByRole('button', {
+    name: /send run summary/i,
+  });
+  await summaryBtn.scrollIntoViewIfNeeded();
+  await expect(summaryBtn).toBeVisible();
+  // The isolated E2E backend has no channels configured → honest disabled state.
+  await expect(summaryBtn).toBeDisabled();
+});

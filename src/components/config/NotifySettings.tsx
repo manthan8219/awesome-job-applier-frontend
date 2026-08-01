@@ -1,8 +1,9 @@
-import { CheckCircle2, Send, XCircle } from 'lucide-react';
+import { BarChart3, CheckCircle2, Send, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useNotifyChannels } from '@/hooks/useNotifyChannels';
+import { useSendNotifySummary } from '@/hooks/useSendNotifySummary';
 import { useTestNotification } from '@/hooks/useTestNotification';
 import type { NotifyChannel } from '@/types/notifications';
 
@@ -24,6 +25,7 @@ function channelLabel(channel: NotifyChannel): string {
 export function NotifySettings() {
   const channels = useNotifyChannels();
   const test = useTestNotification();
+  const summary = useSendNotifySummary();
 
   const enabled = (channels.data ?? []).filter((c) => c.enabled);
   const hasChannels = enabled.length > 0;
@@ -82,8 +84,36 @@ export function NotifySettings() {
         )}
       </div>
 
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          size="sm"
+          variant="ghost"
+          leftIcon={<BarChart3 className="h-3.5 w-3.5" />}
+          loading={summary.isPending}
+          disabled={!ready || !hasChannels}
+          onClick={() => summary.mutate()}
+        >
+          Send run summary
+        </Button>
+        {summary.isSuccess && (
+          <span className="flex items-center gap-1.5 text-xs text-emerald-400">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Digest sent to {summary.data.sent} channel(s)
+          </span>
+        )}
+        {summary.isError && (
+          <span className="flex items-center gap-1.5 text-xs text-red-400">
+            <XCircle className="h-3.5 w-3.5" />
+            {summary.error instanceof Error
+              ? summary.error.message
+              : 'Summary failed'}
+          </span>
+        )}
+      </div>
+
       <p className="text-xs text-slate-500">
-        Test notifications are sent to every configured channel by the backend.
+        Test notifications and run-summary digests are sent to every configured
+        channel by the backend.
       </p>
     </div>
   );
