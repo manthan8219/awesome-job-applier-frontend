@@ -215,8 +215,8 @@ export default function JobsPage() {
             Review &amp; track applications
           </h1>
           <p className="text-sm text-slate-400">
-            Approve found jobs to apply, then track every outcome through the
-            pipeline.
+            Approve the highest-reply-probability jobs, apply with consent, then
+            track every outcome through the pipeline.
           </p>
         </div>
         <Link to="/jobs/new">

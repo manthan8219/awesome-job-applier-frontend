@@ -47,7 +47,8 @@ export function WelcomeStep({
         </h1>
         <p className="text-sm text-slate-400">
           Describe the job you want in plain words — suggestions appear as you
-          type, then become search titles you can edit.
+          type, then become search titles you can edit. We prioritize targeted,
+          recent postings: quality beats volume.
         </p>
       </div>
 
