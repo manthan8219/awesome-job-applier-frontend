@@ -44,6 +44,25 @@ function ScoreGauge({
   );
 }
 
+/**
+ * Validate the `/resume/improve` response before rendering. The backend may
+ * return an incomplete shape (currently a stub) — rendering it blindly would
+ * crash the tab, so we fall back to a graceful message instead.
+ */
+function isImproveOutput(out: unknown): out is ImproveOutput {
+  const o = out as ImproveOutput | null;
+  return (
+    typeof o === 'object' &&
+    o !== null &&
+    typeof o.previewMD === 'string' &&
+    typeof o.dir === 'string' &&
+    typeof o.review === 'object' &&
+    o.review !== null &&
+    typeof o.review.atsScore === 'number' &&
+    typeof o.review.qualityScore === 'number'
+  );
+}
+
 function ResultPanel({ out }: { out: ImproveOutput }) {
   return (
     <motion.div
@@ -228,7 +247,21 @@ export function ImproveTab() {
         </Card>
       )}
 
-      {improve.data && <ResultPanel out={improve.data} />}
+      {improve.data &&
+        (isImproveOutput(improve.data) ? (
+          <ResultPanel out={improve.data} />
+        ) : (
+          <Card className="space-y-2 border-neon-amber/20 p-5">
+            <p className="flex items-center gap-2 text-sm text-neon-amber">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              Resume generation returned an incomplete response.
+            </p>
+            <p className="text-xs text-slate-500">
+              This backend does not support resume generation yet — generate
+              from the TUI (Resume tab), then pick the PDF in Config.
+            </p>
+          </Card>
+        ))}
     </div>
   );
 }
