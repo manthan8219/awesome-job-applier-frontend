@@ -5,6 +5,7 @@ import {
   Briefcase,
   Check,
   ExternalLink,
+  Plus,
   Rocket,
   Search,
 } from 'lucide-react';
@@ -64,7 +65,9 @@ function JobRow({
           aria-label={
             app.approved ? 'Remove from apply queue' : 'Add to apply queue'
           }
-          title={app.approved ? 'Remove from apply queue' : 'Add to apply queue'}
+          title={
+            app.approved ? 'Remove from apply queue' : 'Add to apply queue'
+          }
           className={cn(
             'grid h-6 w-6 shrink-0 place-items-center rounded-md border transition-colors',
             app.approved
@@ -180,17 +183,24 @@ export default function JobsPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-5">
-      <header className="space-y-1">
-        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-neon-cyan/80">
-          Jobs
-        </p>
-        <h1 className="font-display text-3xl font-semibold text-slate-50">
-          Review &amp; track applications
-        </h1>
-        <p className="text-sm text-slate-400">
-          Approve found jobs to apply, then track every outcome through the
-          pipeline.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-neon-cyan/80">
+            Jobs
+          </p>
+          <h1 className="font-display text-3xl font-semibold text-slate-50">
+            Review &amp; track applications
+          </h1>
+          <p className="text-sm text-slate-400">
+            Approve found jobs to apply, then track every outcome through the
+            pipeline.
+          </p>
+        </div>
+        <Link to="/jobs/new">
+          <Button size="sm" leftIcon={<Plus className="h-4 w-4" />}>
+            Add job
+          </Button>
+        </Link>
       </header>
 
       <div className="relative">

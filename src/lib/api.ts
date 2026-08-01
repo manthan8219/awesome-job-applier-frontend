@@ -1,6 +1,7 @@
 import type {
   Application,
   MissionSnapshot,
+  NewApplicationInput,
   NexusConfig,
   Outcome,
 } from '@/types';
@@ -129,6 +130,13 @@ export const api = {
   async getApplications(query?: string): Promise<Application[]> {
     const q = query ? `?q=${encodeURIComponent(query)}` : '';
     return request<Application[]>(`/jobs${q}`);
+  },
+
+  async createApplication(input: NewApplicationInput): Promise<Application> {
+    return request<Application>('/jobs', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
   },
 
   async setApplicationOutcome(
