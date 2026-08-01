@@ -17,6 +17,7 @@ import type {
 import type {
   ImproveOutput,
   ImproveRequest,
+  PreviewResumeDoc,
   ResumeAnalysis,
   ResumeTemplate,
   WorkProject,
@@ -319,6 +320,48 @@ export const api = {
    */
   templatePreviewUrl(templateId: string): string {
     return `${BASE_URL}/resume/templates/${encodeURIComponent(templateId)}/preview.pdf`;
+  },
+
+  /**
+   * Absolute URL of the generated resume PDF for a version in the library.
+   * Used by the result panel's inline PDF pane (`<object data={url}>`).
+   */
+  resumePdfUrl(pdfId: string): string {
+    return `${BASE_URL}/resume/library/${encodeURIComponent(pdfId)}/pdf`;
+  },
+
+  /**
+   * Renders the user's own structured resume data (profile + projects +
+   * skills) into a template with the real backend PDF engine — no AI, fully
+   * deterministic. Returns the PDF bytes so the UI can show it inline.
+   */
+  async previewTemplateWithData(
+    templateId: string,
+    doc: PreviewResumeDoc,
+  ): Promise<Blob> {
+    const res = await fetch(
+      `${BASE_URL}/resume/templates/${encodeURIComponent(templateId)}/preview`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(doc),
+      },
+    );
+    if (!res.ok) {
+      let message = `${res.status} ${res.statusText}`;
+      try {
+        const body = (await res.json()) as {
+          message?: string;
+          error?: string;
+        };
+        message = body.message ?? body.error ?? message;
+      } catch {
+        // body was not JSON; keep the status text
+      }
+      throw new ApiError(res.status, message);
+    }
+    return res.blob();
   },
 
   async reanalyzeResume(path?: string): Promise<ResumeAnalysis> {

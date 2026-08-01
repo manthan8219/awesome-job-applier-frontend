@@ -44,6 +44,15 @@ async function enableAndClickGenerate() {
   fireEvent.click(button);
 }
 
+beforeEach(() => {
+  // jsdom does not implement URL.createObjectURL — stub it so the inline PDF
+  // preview ("Preview with my data") can render.
+  Object.assign(URL, {
+    createObjectURL: vi.fn(() => 'blob:mock-url'),
+    revokeObjectURL: vi.fn(),
+  });
+});
+
 afterEach(() => {
   vi.restoreAllMocks();
 });
@@ -141,6 +150,90 @@ describe('ImproveTab', () => {
     );
     expect(screen.getAllByText('≤4 roles').length).toBeGreaterThan(0);
     expect(screen.getAllByText('≤3 bullets').length).toBeGreaterThan(0);
+  });
+
+  it('shows an inline PDF pane for the generated resume and a markdown fallback', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
+    );
+    vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
+    vi.spyOn(api, 'improveResume').mockResolvedValue({
+      ...validOutput,
+      pdfId: '20260101-120000',
+    });
+    mockTemplates();
+
+    renderTab();
+    await enableAndClickGenerate();
+
+    // The inline PDF object points at the library PDF stream.
+    const pdfObject = await screen.findByLabelText('Generated resume PDF');
+    expect(pdfObject).toHaveAttribute(
+      'data',
+      expect.stringContaining('/resume/library/20260101-120000/pdf'),
+    );
+    expect(
+      screen.getByRole('link', { name: /open pdf in a new tab/i }),
+    ).toHaveAttribute(
+      'href',
+      expect.stringContaining('/resume/library/20260101-120000/pdf'),
+    );
+
+    // Flipping to Markdown reveals the editable source.
+    fireEvent.click(screen.getByRole('button', { name: /^markdown$/i }));
+    expect(screen.getByText(/shipped 3 payment systems/i)).toBeInTheDocument();
+  });
+
+  it('preview with my data posts the assembled resume and renders it inline', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
+    );
+    vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
+    vi.spyOn(api, 'improveResume').mockResolvedValue(validOutput);
+    vi.spyOn(api, 'getResumeAnalysis').mockResolvedValue({
+      valid: true,
+      fileType: 'pdf',
+      message: 'ok',
+      profile: {
+        summary: 'Backend engineer with 6 years shipping Go services.',
+        skills: ['Go', 'PostgreSQL'],
+        suitableRoles: ['Senior Backend Engineer'],
+      },
+      contact: { firstName: 'Ada', lastName: 'Lovelace' },
+    } as never);
+    const preview = vi
+      .spyOn(api, 'previewTemplateWithData')
+      .mockResolvedValue(new Blob(['%PDF-fake'], { type: 'application/pdf' }));
+    mockTemplates();
+
+    renderTab();
+
+    const button = await screen.findByRole('button', {
+      name: /preview with my data/i,
+    });
+    // Enabled once the template registry resolves from the API.
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+
+    await waitFor(() =>
+      expect(preview).toHaveBeenCalledWith('classic', {
+        fullName: 'Ada Lovelace',
+        headline: 'Senior Backend Engineer',
+        summary: 'Backend engineer with 6 years shipping Go services.',
+        skills: ['Go', 'PostgreSQL'],
+        experience: [
+          {
+            title: 'Senior Backend Engineer',
+            org: 'Payments API',
+            period: '2024 – Present',
+            bullets: ['Reduced p99 latency from 1200ms to 180ms'],
+          },
+        ],
+      }),
+    );
+
+    const previewObject = await screen.findByLabelText('Your resume preview');
+    expect(previewObject).toHaveAttribute('data', 'blob:mock-url');
   });
 
   it('renders template cards, defaults to Classic, and passes the selection', async () => {
