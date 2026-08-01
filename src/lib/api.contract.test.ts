@@ -290,6 +290,11 @@ describe.skipIf(!backendAvailable)(
         expect(Array.isArray(await api.buildOutreachQueue('email'))).toBe(true);
       });
 
+      it('sendOutreachItem returns the backend stub shape ({ id })', async () => {
+        const res = await api.sendOutreachItem('contract-item-1');
+        expect(res.id).toBe('contract-item-1');
+      });
+
       it('getOutreachLog resolves to an array', async () => {
         expect(Array.isArray(await api.getOutreachLog())).toBe(true);
       });

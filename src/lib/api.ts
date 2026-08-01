@@ -246,8 +246,10 @@ export const api = {
     });
   },
 
-  async sendOutreachItem(id: string): Promise<OutreachItem> {
-    return request<OutreachItem>(`/outreach/send/${encodeURIComponent(id)}`, {
+  async sendOutreachItem(id: string): Promise<{ id: string }> {
+    // The backend currently echoes the id (stub). When real sending lands it
+    // should return a full OutreachItem — bump the return type then.
+    return request<{ id: string }>(`/outreach/send/${encodeURIComponent(id)}`, {
       method: 'POST',
     });
   },
