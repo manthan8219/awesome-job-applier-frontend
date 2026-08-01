@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Columns,
+  ExternalLink,
   FileText,
   ShieldCheck,
   Sparkles,
@@ -12,10 +13,12 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SectionHeading } from './SectionHeading';
+import { TemplatePreview } from './TemplatePreview';
 import { useImproveResume } from '@/hooks/useImproveResume';
 import { useConfig } from '@/hooks/useConfig';
 import { useResumeProjects } from '@/hooks/useResumeProjects';
 import { useResumeTemplates } from '@/hooks/useResumeTemplates';
+import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import {
   RESUME_FORMATS,
@@ -125,116 +128,95 @@ function ResultPanel({ out }: { out: ImproveOutput }) {
     </motion.div>
   );
 }
-/**
- * Tiny skeleton of each template's layout — header accent bar, section lines
- * and (for two-column templates) the skills/education rail on the declared side.
- */
-function TemplatePreview({ t }: { t: ResumeTemplate }) {
-  const isSidebar = t.layout === 'sidebar';
-  const railRight = t.railSide === 'right';
-  const main = (
-    <div className="flex min-w-0 flex-1 flex-col gap-1">
-      <div
-        className="h-2 w-1/2 rounded-sm"
-        style={{ backgroundColor: t.accentHex }}
-      />
-      <div className="h-1 w-full rounded-sm bg-white/10" />
-      <div className="h-1 w-3/4 rounded-sm bg-white/10" />
-      <div className="h-1 w-full rounded-sm bg-white/10" />
-    </div>
-  );
-  const rail = (
-    <div className="flex w-5 shrink-0 flex-col gap-1">
-      <div
-        className="h-1 w-full rounded-sm"
-        style={{ backgroundColor: t.accentHex, opacity: 0.75 }}
-      />
-      <div className="h-1 w-full rounded-sm bg-white/10" />
-      <div className="h-1 w-full rounded-sm bg-white/10" />
-      <div className="h-1 w-1/2 rounded-sm bg-white/10" />
-    </div>
-  );
-  return (
-    <div className="flex h-16 gap-1.5 rounded-lg border border-white/5 bg-ink-950/80 p-1.5">
-      {isSidebar && railRight ? rail : null}
-      {main}
-      {isSidebar && !railRight ? rail : null}
-    </div>
-  );
-}
-
 function TemplatePicker({
   templates,
   selected,
   onSelect,
+  canPreview,
 }: {
   templates: ResumeTemplate[];
   selected: string;
   onSelect: (id: string) => void;
+  canPreview: boolean;
 }) {
   return (
     <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
       {templates.map((t) => {
         const on = selected === t.id;
         return (
-          <button
+          <div
             key={t.id}
-            type="button"
-            aria-pressed={on}
-            onClick={() => onSelect(t.id)}
             className={cn(
-              'flex flex-col gap-2 rounded-xl border p-3 text-left transition-all',
+              'overflow-hidden rounded-xl border transition-all',
               on
                 ? 'border-neon-cyan/50 bg-neon-cyan/10 shadow-glow-soft'
-                : 'border-white/5 bg-ink-800/40 text-slate-400 hover:border-white/15 hover:bg-white/5',
+                : 'border-white/5 bg-ink-800/40 hover:border-white/15',
             )}
           >
-            <TemplatePreview t={t} />
-            <span className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-2">
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: t.accentHex }}
-                />
-                <span
-                  className={cn(
-                    'text-sm font-medium',
-                    on ? 'text-neon-cyan' : 'text-slate-200',
+            <button
+              type="button"
+              aria-pressed={on}
+              onClick={() => onSelect(t.id)}
+              className="flex w-full flex-col gap-2 p-3 text-left"
+            >
+              <TemplatePreview template={t} />
+              <span className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: t.accentHex }}
+                  />
+                  <span
+                    className={cn(
+                      'text-sm font-medium',
+                      on ? 'text-neon-cyan' : 'text-slate-200',
+                    )}
+                  >
+                    {t.name}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  {t.bodyFont === 'mono' ? (
+                    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                      mono
+                    </span>
+                  ) : t.bodyFont === 'serif' ? (
+                    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                      serif
+                    </span>
+                  ) : null}
+                  {t.layout === 'sidebar' ? (
+                    <Columns className="h-3.5 w-3.5" />
+                  ) : (
+                    <FileText className="h-3.5 w-3.5" />
                   )}
-                >
-                  {t.name}
+                  {t.onePage && (
+                    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                      1 page
+                    </span>
+                  )}
                 </span>
               </span>
-              <span className="flex items-center gap-1.5">
-                {t.bodyFont === 'mono' ? (
-                  <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
-                    mono
-                  </span>
-                ) : t.bodyFont === 'serif' ? (
-                  <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
-                    serif
-                  </span>
-                ) : null}
-                {t.layout === 'sidebar' ? (
-                  <Columns className="h-3.5 w-3.5" />
-                ) : (
-                  <FileText className="h-3.5 w-3.5" />
-                )}
-                {t.onePage && (
-                  <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
-                    1 page
-                  </span>
-                )}
+              <span className="text-[11px] leading-snug text-slate-500">
+                {t.description}
               </span>
-            </span>
-            <span className="text-[11px] leading-snug text-slate-500">
-              {t.description}
-            </span>
-            <span className="flex items-center gap-1 text-[10px] text-slate-500">
-              <ShieldCheck className="h-3 w-3 shrink-0" />
-              {t.atsNote}
-            </span>
-          </button>
+              <span className="flex items-center gap-1 text-[10px] text-slate-500">
+                <ShieldCheck className="h-3 w-3 shrink-0" />
+                {t.atsNote}
+              </span>
+            </button>
+            {canPreview && (
+              <a
+                href={api.templatePreviewUrl(t.id)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 border-t border-white/5 px-3 py-1.5 text-[10px] font-medium text-neon-cyan/80 transition-colors hover:bg-white/5 hover:text-neon-cyan"
+              >
+                <ExternalLink className="h-3 w-3 shrink-0" />
+                View sample PDF
+              </a>
+            )}
+          </div>
         );
       })}
     </div>
@@ -250,6 +232,9 @@ export function ImproveTab() {
   // Fall back to the static registry when the API is unreachable/empty.
   const templates: ResumeTemplate[] =
     apiTemplates && apiTemplates.length > 0 ? apiTemplates : RESUME_TEMPLATES;
+  // "View sample PDF" needs the backend renderer — only offer it when the
+  // registry came from the API (the offline fallback has no PDF server).
+  const templatesFromApi = Boolean(apiTemplates && apiTemplates.length > 0);
   const [templateId, setTemplateId] = useState<string>(TEMPLATE_DEFAULT_ID);
   const [formats, setFormats] = useState<Set<ResumeFormat>>(
     new Set<ResumeFormat>(['markdown', 'latex', 'pdf']),
@@ -319,6 +304,7 @@ export function ImproveTab() {
           templates={templates}
           selected={templateId}
           onSelect={setTemplateId}
+          canPreview={templatesFromApi}
         />
       </Card>
 

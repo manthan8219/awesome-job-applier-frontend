@@ -97,6 +97,10 @@ export interface ResumeTemplate {
   railSide?: 'left' | 'right';
   /** Body font family the renderer uses: sans | serif | mono. */
   bodyFont?: 'sans' | 'serif' | 'mono';
+  /** Header alignment of the name block (mirrors the backend renderer). */
+  headerAlign?: 'left' | 'center';
+  /** Whether the renderer draws an accent rule under the header. */
+  showRule?: boolean;
 }
 
 /** Offline fallback registry — mirrors the backend `GET /resume/templates`. */
@@ -114,6 +118,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#059669',
+    headerAlign: 'left',
+    showRule: true,
     onePage: false,
     atsNote: 'Safest for ATS — single column, standard section names.',
   },
@@ -130,6 +136,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#8b5cf6',
+    headerAlign: 'center',
+    showRule: true,
     onePage: false,
     atsNote: 'ATS-safe — single column with standard section names.',
   },
@@ -146,6 +154,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#475569',
+    headerAlign: 'center',
+    showRule: false,
     onePage: false,
     bodyFont: 'serif',
     atsNote: 'ATS-safe — single column with standard section names.',
@@ -163,6 +173,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#94a3b8',
+    headerAlign: 'left',
+    showRule: false,
     onePage: false,
     atsNote: 'ATS-safe — single column with standard section names.',
   },
@@ -179,6 +191,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'skills', label: 'Skills' },
     ],
     accentHex: '#1e3a8a',
+    headerAlign: 'center',
+    showRule: true,
     onePage: false,
     bodyFont: 'serif',
     atsNote: 'ATS-safe — single column with standard section names.',
@@ -196,6 +210,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#a3e635',
+    headerAlign: 'left',
+    showRule: true,
     onePage: false,
     bodyFont: 'mono',
     atsNote: 'ATS-safe — single column with standard section names.',
@@ -214,6 +230,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#22d3ee',
+    headerAlign: 'center',
+    showRule: true,
     onePage: false,
     atsNote:
       'Design-forward — two columns can confuse some ATS systems; use for roles where design matters.',
@@ -232,6 +250,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#f59e0b',
+    headerAlign: 'center',
+    showRule: true,
     onePage: false,
     atsNote:
       'Design-forward — two columns can confuse some ATS systems; use for roles where design matters.',
@@ -248,6 +268,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#38bdf8',
+    headerAlign: 'left',
+    showRule: true,
     onePage: true,
     atsNote: 'Optimized for one page — good for senior candidates.',
   },
@@ -264,6 +286,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#ec4899',
+    headerAlign: 'center',
+    showRule: true,
     onePage: false,
     atsNote: 'ATS-safe — single column with standard section names.',
   },
@@ -280,6 +304,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#111827',
+    headerAlign: 'left',
+    showRule: false,
     onePage: false,
     bodyFont: 'serif',
     atsNote: 'ATS-safe — single column with standard section names.',
@@ -296,6 +322,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#0d9488',
+    headerAlign: 'left',
+    showRule: true,
     onePage: false,
     atsNote: 'ATS-safe — single column with standard section names.',
   },

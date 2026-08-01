@@ -38,6 +38,15 @@ test('resume studio: New resume step shows an honest readiness state without AI'
   await expect(page.getByRole('button', { name: /developer/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /split/i })).toBeVisible();
 
+  // The gallery shows real sample resumes (not abstract bars), and every card
+  // links to the real backend-rendered PDF for that template.
+  await expect(page.getByText(/maya okonkwo/i).first()).toBeVisible();
+  const sampleLink = page.getByRole('link', { name: /view sample pdf/i }).first();
+  await expect(sampleLink).toHaveAttribute(
+    'href',
+    /\/resume\/templates\/classic\/preview\.pdf$/,
+  );
+
   // No AI keys in the E2E env → the checklist explains why Generate is locked.
   await expect(page.getByText(/AI Assist on/i)).toBeVisible();
   await expect(
