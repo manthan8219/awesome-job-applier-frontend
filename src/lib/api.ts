@@ -21,7 +21,11 @@ import type {
   WorkProject,
 } from '@/types/resume';
 import type { UsageSnapshot } from '@/types/usage';
-import type { NotifyChannel, NotifyTestResult } from '@/types/notifications';
+import type {
+  NotifyChannel,
+  NotifySummaryResult,
+  NotifyTestResult,
+} from '@/types/notifications';
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(
   /\/$/,
@@ -450,6 +454,10 @@ export const api = {
 
   async testNotification(): Promise<NotifyTestResult> {
     return request('/notify/test', { method: 'POST' });
+  },
+
+  async sendNotifySummary(): Promise<NotifySummaryResult> {
+    return request('/notify/summary', { method: 'POST' });
   },
 
   /* ------------------------------ Scraper ------------------------------ */

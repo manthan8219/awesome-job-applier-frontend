@@ -528,6 +528,14 @@ describe.skipIf(!backendAvailable)(
         }
       });
 
+      it('sendNotifySummary without configured channels rejects honestly', async () => {
+        // The isolated contract backend has no channels → the real handler
+        // must 400 instead of pretending a digest was sent.
+        await expect(api.sendNotifySummary()).rejects.toMatchObject({
+          status: 400,
+        });
+      });
+
       it('getScraperStatus resolves', async () => {
         const s = await api.getScraperStatus();
         expect(typeof s.installed).toBe('boolean');

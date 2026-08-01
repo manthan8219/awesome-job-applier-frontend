@@ -9,3 +9,9 @@ export interface NotifyChannel {
 export interface NotifyTestResult {
   sent: number;
 }
+
+/** Response from POST /api/notify/summary — channels that got the digest. */
+export interface NotifySummaryResult {
+  sent: number;
+  errors?: string[];
+}
