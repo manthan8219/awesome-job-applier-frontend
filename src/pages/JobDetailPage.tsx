@@ -150,6 +150,26 @@ export default function JobDetailPage() {
             </div>
           )}
 
+          {app.responseScore != null && app.responseScore > 0 && (
+            <div className="space-y-1 rounded-xl border border-emerald-400/20 bg-emerald-400/5 px-4 py-3">
+              <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-slate-400">
+                <span>Response probability</span>
+                <span className="font-mono text-emerald-400">
+                  {app.responseScore}/100
+                </span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-ink-700">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-neon-cyan"
+                  style={{ width: `${app.responseScore}%` }}
+                />
+              </div>
+              {app.responseSummary && (
+                <p className="text-sm text-slate-400">{app.responseSummary}</p>
+              )}
+            </div>
+          )}
+
           {app.reason && (
             <div className="rounded-xl border border-white/5 bg-ink-800/40 px-4 py-3 text-sm text-slate-300">
               <span className="text-slate-500">Reason: </span>

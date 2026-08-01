@@ -30,8 +30,12 @@ const STAGE_FACTOR: Record<Application['outcome'], number> = {
 /**
  * Reply probability = 50% fit × 30% freshness × 20% pipeline stage.
  * Returns 0-100; degrades gracefully when history is empty (0 fit).
+ * Prefers the backend-computed responseScore (KAN-19) when the API provides
+ * one — it factors in the provider's observed reply probability.
  */
 export function scoreReplyProbability(app: Application): number {
+  const backend = app.responseScore;
+  if (typeof backend === 'number' && backend > 0) return backend;
   const fit = Math.max(0, Math.min(100, app.fitScore ?? 0)) / 100;
   const fresh = freshnessFactor(app.postedAt);
   const stage = STAGE_FACTOR[app.outcome] ?? 0.4;
@@ -67,6 +71,8 @@ const OUTCOME_WHY: Record<Application['outcome'], string> = {
 
 /** A one-line "why this job" for the guided feed. */
 export function whyLine(app: Application): string {
+  const fromBackend = app.responseSummary;
+  if (fromBackend?.trim()) return fromBackend;
   const bits: string[] = [];
   if ((app.fitScore ?? 0) > 0) bits.push(`fit ${app.fitScore}`);
   const fresh = freshnessFactor(app.postedAt);

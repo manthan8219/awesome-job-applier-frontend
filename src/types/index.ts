@@ -62,6 +62,13 @@ export interface Application {
     resume?: { filename?: string; checksum?: string };
     answers?: Array<{ question: string; answer: string; aiGenerated?: boolean }>;
   };
+  /**
+   * Reply-probability estimate (KAN-19), 0-100, provided by the backend when
+   * meaningful (> 0). The guided feed prefers it over its client-side guess.
+   */
+  responseScore?: number;
+  /** One-line why for the response score (KAN-19). */
+  responseSummary?: string;
 }
 
 /** Onboarding-relevant subset of config.Config. */

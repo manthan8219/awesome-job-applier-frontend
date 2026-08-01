@@ -116,6 +116,17 @@ function JobRow({
               </span>
             </>
           )}
+          {app.responseScore != null && app.responseScore > 0 && (
+            <>
+              <span>·</span>
+              <span
+                title={app.responseSummary ?? 'response probability'}
+                className="font-mono text-emerald-400"
+              >
+                resp {app.responseScore}
+              </span>
+            </>
+          )}
         </div>
       </Link>
       <DotBadge dot={s.dot} label={s.label} badge={s.badge} />

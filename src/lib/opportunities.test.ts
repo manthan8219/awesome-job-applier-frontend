@@ -88,9 +88,25 @@ describe('topOpportunities', () => {
   it('returns an empty list for no applications', () => {
     expect(topOpportunities([])).toEqual([]);
   });
+  it('prefers the backend responseScore when provided (KAN-19)', () => {
+    const app = makeApp({ fitScore: 10, responseScore: 88 });
+    expect(scoreReplyProbability(app)).toBe(88);
+  });
+
+  it('falls back to the client estimate when responseScore is absent', () => {
+    const app = makeApp({ fitScore: 100, outcome: 'offer' });
+    expect(scoreReplyProbability(app)).toBe(100);
+  });
 });
 
 describe('whyLine', () => {
+  it('uses the backend responseSummary when present (KAN-19)', () => {
+    const line = whyLine(
+      makeApp({ responseSummary: 'fit 92 · posted recently · provider reply rate 50%' }),
+    );
+    expect(line).toBe('fit 92 · posted recently · provider reply rate 50%');
+  });
+
   it('describes fit, freshness and stage', () => {
     const line = whyLine(
       makeApp({
