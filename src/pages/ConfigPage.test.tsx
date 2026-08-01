@@ -37,6 +37,7 @@ describe('ConfigPage', () => {
       'Provider Keys',
       'AI Configuration',
       'Apply Safety',
+      'Tailoring',
       'Outreach',
       'Integrations',
       'Career Scraper',
@@ -102,6 +103,31 @@ describe('ConfigPage', () => {
       name: /run a daily dry-run search/i,
     });
     expect(dailyRun).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('persists the tailoring knobs through a save round-trip', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(makeConfig());
+    const saveConfig = vi
+      .spyOn(api, 'saveConfig')
+      .mockResolvedValue(makeConfig({ tailorPerJob: true, tailorMaxRounds: 5 }));
+
+    renderPage();
+
+    const tailor = await screen.findByRole('switch', {
+      name: /auto-tailor each high-fit application/i,
+    });
+    expect(tailor).toHaveAttribute('aria-checked', 'false');
+
+    fireEvent.click(tailor);
+    const rounds = await screen.findByLabelText(/max tailoring rounds/i);
+    fireEvent.change(rounds, { target: { value: '5' } });
+
+    fireEvent.click(await screen.findByRole('button', { name: /save now/i }));
+    await waitFor(() =>
+      expect(saveConfig).toHaveBeenCalledWith(
+        expect.objectContaining({ tailorPerJob: true, tailorMaxRounds: 5 }),
+      ),
+    );
   });
 
   it('saves on the Save now button and shows the success indicator', async () => {

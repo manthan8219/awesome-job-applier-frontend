@@ -1022,6 +1022,33 @@ export default function ConfigPage() {
         </div>
       </Card>
 
+      {/* 5b. Tailoring */}
+      <Card className="space-y-4 p-5">
+        <SectionHeading>Tailoring</SectionHeading>
+        <Toggle
+          label="Auto-tailor each high-fit application"
+          value={f.tailorPerJob ?? false}
+          onChange={(v) => patch({ tailorPerJob: v })}
+        />
+        <p className="text-xs text-slate-500">
+          Generates an HR-reviewed, job-tailored resume + cover letter before a
+          high-fit apply. Fails open to the base resume when AI is unavailable.
+        </p>
+        {f.tailorPerJob && (
+          <>
+            <NumberField
+              label="Max tailoring rounds"
+              value={f.tailorMaxRounds ?? 3}
+              onChange={(v) => patch({ tailorMaxRounds: v })}
+              min={1}
+            />
+            <p className="text-xs text-slate-500">
+              Caps the writer → HR-review loop per kit (0 = default 3).
+            </p>
+          </>
+        )}
+      </Card>
+
       {/* 6. Outreach */}
       <Card className="space-y-4 p-5">
         <SectionHeading>Outreach</SectionHeading>

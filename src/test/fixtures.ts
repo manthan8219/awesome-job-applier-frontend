@@ -84,6 +84,8 @@ export function makeConfig(overrides: Partial<NexusConfig> = {}): NexusConfig {
     maxAppsPerDay: 25,
     applyDelaySec: 8,
     minFitScore: 60,
+    tailorPerJob: false,
+    tailorMaxRounds: 3,
     aiAssist: false,
     aiProvider: '',
     dailyRunEnabled: false,
