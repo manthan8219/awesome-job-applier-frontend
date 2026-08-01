@@ -125,6 +125,44 @@ function ResultPanel({ out }: { out: ImproveOutput }) {
     </motion.div>
   );
 }
+/**
+ * Tiny skeleton of each template's layout — header accent bar, section lines
+ * and (for two-column templates) the skills/education rail on the declared side.
+ */
+function TemplatePreview({ t }: { t: ResumeTemplate }) {
+  const isSidebar = t.layout === 'sidebar';
+  const railRight = t.railSide === 'right';
+  const main = (
+    <div className="flex min-w-0 flex-1 flex-col gap-1">
+      <div
+        className="h-2 w-1/2 rounded-sm"
+        style={{ backgroundColor: t.accentHex }}
+      />
+      <div className="h-1 w-full rounded-sm bg-white/10" />
+      <div className="h-1 w-3/4 rounded-sm bg-white/10" />
+      <div className="h-1 w-full rounded-sm bg-white/10" />
+    </div>
+  );
+  const rail = (
+    <div className="flex w-5 shrink-0 flex-col gap-1">
+      <div
+        className="h-1 w-full rounded-sm"
+        style={{ backgroundColor: t.accentHex, opacity: 0.75 }}
+      />
+      <div className="h-1 w-full rounded-sm bg-white/10" />
+      <div className="h-1 w-full rounded-sm bg-white/10" />
+      <div className="h-1 w-1/2 rounded-sm bg-white/10" />
+    </div>
+  );
+  return (
+    <div className="flex h-16 gap-1.5 rounded-lg border border-white/5 bg-ink-950/80 p-1.5">
+      {isSidebar && railRight ? rail : null}
+      {main}
+      {isSidebar && !railRight ? rail : null}
+    </div>
+  );
+}
+
 function TemplatePicker({
   templates,
   selected,
@@ -135,7 +173,7 @@ function TemplatePicker({
   onSelect: (id: string) => void;
 }) {
   return (
-    <div className="grid gap-2 sm:grid-cols-2">
+    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
       {templates.map((t) => {
         const on = selected === t.id;
         return (
@@ -151,6 +189,7 @@ function TemplatePicker({
                 : 'border-white/5 bg-ink-800/40 text-slate-400 hover:border-white/15 hover:bg-white/5',
             )}
           >
+            <TemplatePreview t={t} />
             <span className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-2">
                 <span
@@ -167,6 +206,15 @@ function TemplatePicker({
                 </span>
               </span>
               <span className="flex items-center gap-1.5">
+                {t.bodyFont === 'mono' ? (
+                  <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                    mono
+                  </span>
+                ) : t.bodyFont === 'serif' ? (
+                  <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                    serif
+                  </span>
+                ) : null}
                 {t.layout === 'sidebar' ? (
                   <Columns className="h-3.5 w-3.5" />
                 ) : (

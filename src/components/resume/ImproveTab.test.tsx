@@ -98,10 +98,11 @@ describe('ImproveTab', () => {
 
     renderTab();
 
-    // All four templates are offered; Classic is selected by default.
-    const classic = await screen.findByRole('button', { name: /classic/i });
+    // All templates are offered; Classic is selected by default.
+    // (/^classic/ so Monochrome's "quiet, classic" copy doesn't collide.)
+    const classic = await screen.findByRole('button', { name: /^classic/i });
     expect(classic).toHaveAttribute('aria-pressed', 'true');
-    for (const name of ['Modern', 'Sidebar', 'Compact']) {
+    for (const name of ['Modern', 'Sidebar', 'Compact', 'Executive', 'Developer', 'Split']) {
       expect(screen.getByRole('button', { name: new RegExp(name, 'i') })).toHaveAttribute(
         'aria-pressed',
         'false',

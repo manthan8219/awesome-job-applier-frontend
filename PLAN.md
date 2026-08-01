@@ -72,11 +72,11 @@
 
 ### ✅ Resume template registry (choose a design, fit the CV into it)
 
-- [x] **Backend template registry** — `internal/resume/template.go`: machine-readable `Template` manifests (id/name/layout/sections/accent/ATS note/one-page) for **Classic, Modern, Sidebar, Compact**; `GetTemplate` defaults to Classic (TUI/tailor callers unchanged)
-- [x] **Template-aware renderers** — `RenderMarkdownFor` / `RenderLaTeXFor` / `RenderNativePDFFor` follow each manifest (section order, two-column rail for Sidebar, accent colors, margins/fonts for Compact); old `RenderMarkdown`/`RenderLaTeX`/`EnsurePDF`/`RenderNativePDF` kept as Classic wrappers
+- [x] **Backend template registry** — `internal/resume/template.go`: machine-readable `Template` manifests (id/name/layout/sections/accent/ATS note/one-page/font/rail-side) for **12 curated designs** — Classic, Modern, Sidebar, Compact, Executive (serif), Minimal, Academic (education-first serif), Developer (mono), Split (right rail), Bold, Monochrome (serif), Nordic; `GetTemplate` defaults to Classic (TUI/tailor callers unchanged)
+- [x] **Template-aware renderers** — `RenderMarkdownFor` / `RenderLaTeXFor` / `RenderNativePDFFor` follow each manifest (section order, two-column rail on the declared side for Sidebar/Split, accent colors, margins/fonts for Compact, serif/mono body fonts for Executive/Academic/Developer/Monochrome); old `RenderMarkdown`/`RenderLaTeX`/`EnsurePDF`/`RenderNativePDF` kept as Classic wrappers
 - [x] **Template-aware AI polish loop** — the creator prompt receives the selected template's sections/order/layout/one-page constraint (`polishTemplateBlock`) and the assessor judges the template-rendered Markdown, so content is written to fit the design
 - [x] **API** — `GET /api/resume/templates` (registry) + `POST /api/resume/improve` accepts `templateId` (400 on unknown) and returns `templateId`/`templateName`; version library records the template
-- [x] **Frontend** — `ResumeTemplate` types + offline `RESUME_TEMPLATES` fallback, `getResumeTemplates()` client + `useResumeTemplates` hook, and a **template picker** (cards with accent dot, layout icon, ATS note, 1-page badge) on the New-resume step; selection is passed with the generate call
+- [x] **Frontend** — `ResumeTemplate` types + offline `RESUME_TEMPLATES` fallback (12), `getResumeTemplates()` client + `useResumeTemplates` hook, and a **template gallery** on the New-resume step: responsive 3-column grid of cards with a mini layout preview (header bar, section lines, rail position), accent dot, font badge, layout icon, ATS note and 1-page badge; selection is passed with the generate call
 - [x] Gates: backend `go build/vet/test` (68 pkgs) green; frontend lint/build green; vitest (245) incl. contract test for `/resume/templates`; resume e2e spec extended + passing against the real backend
 
 ### 🔵 Product leaps (advisory)

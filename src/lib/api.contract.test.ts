@@ -434,13 +434,26 @@ describe.skipIf(!backendAvailable)(
 
       it('getResumeTemplates returns the curated registry', async () => {
         const templates = await api.getResumeTemplates();
-        expect(templates.length).toBeGreaterThanOrEqual(4);
+        expect(templates.length).toBeGreaterThanOrEqual(12);
         const classic = templates.find((t) => t.id === 'classic');
         expect(classic).toBeDefined();
         expect(classic?.name).toBeTruthy();
         expect(classic?.layout).toBeTruthy();
         expect(classic?.sections.length).toBeGreaterThan(0);
         expect(classic?.accentHex).toMatch(/^#/);
+
+        // The expanded registry exposes font + rail tokens where relevant.
+        const developer = templates.find((t) => t.id === 'developer');
+        expect(developer?.bodyFont).toBe('mono');
+        const split = templates.find((t) => t.id === 'split');
+        expect(split?.railSide).toBe('right');
+        const ids = templates.map((t) => t.id);
+        for (const id of [
+          'classic', 'modern', 'sidebar', 'compact', 'executive', 'minimal',
+          'academic', 'developer', 'split', 'bold', 'monochrome', 'nordic',
+        ]) {
+          expect(ids).toContain(id);
+        }
       });
 
       it('reanalyzeResume without a path returns a clean 400', async () => {

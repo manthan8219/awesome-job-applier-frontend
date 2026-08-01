@@ -93,6 +93,10 @@ export interface ResumeTemplate {
   accentHex: string;
   onePage: boolean;
   atsNote: string;
+  /** Side the skills/education rail sits on for two-column templates. */
+  railSide?: 'left' | 'right';
+  /** Body font family the renderer uses: sans | serif | mono. */
+  bodyFont?: 'sans' | 'serif' | 'mono';
 }
 
 /** Offline fallback registry — mirrors the backend `GET /resume/templates`. */
@@ -130,11 +134,79 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     atsNote: 'ATS-safe — single column with standard section names.',
   },
   {
+    id: 'executive',
+    name: 'Executive',
+    description:
+      'Serif type with a muted steel accent — formal, senior-leader tone.',
+    layout: 'single',
+    sections: [
+      { key: 'summary', label: 'Summary' },
+      { key: 'skills', label: 'Skills' },
+      { key: 'experience', label: 'Experience' },
+      { key: 'education', label: 'Education' },
+    ],
+    accentHex: '#475569',
+    onePage: false,
+    bodyFont: 'serif',
+    atsNote: 'ATS-safe — single column with standard section names.',
+  },
+  {
+    id: 'minimal',
+    name: 'Minimal',
+    description:
+      'Bare-bones single column with generous whitespace and a soft slate accent.',
+    layout: 'single',
+    sections: [
+      { key: 'summary', label: 'Summary' },
+      { key: 'skills', label: 'Skills' },
+      { key: 'experience', label: 'Experience' },
+      { key: 'education', label: 'Education' },
+    ],
+    accentHex: '#94a3b8',
+    onePage: false,
+    atsNote: 'ATS-safe — single column with standard section names.',
+  },
+  {
+    id: 'academic',
+    name: 'Academic',
+    description:
+      'Education-forward with serif type and a deep navy accent — built for academia.',
+    layout: 'single',
+    sections: [
+      { key: 'summary', label: 'Summary' },
+      { key: 'education', label: 'Education' },
+      { key: 'experience', label: 'Experience' },
+      { key: 'skills', label: 'Skills' },
+    ],
+    accentHex: '#1e3a8a',
+    onePage: false,
+    bodyFont: 'serif',
+    atsNote: 'ATS-safe — single column with standard section names.',
+  },
+  {
+    id: 'developer',
+    name: 'Developer',
+    description:
+      'Monospace type with a lime accent — a terminal-flavoured look.',
+    layout: 'single',
+    sections: [
+      { key: 'summary', label: 'Summary' },
+      { key: 'skills', label: 'Skills' },
+      { key: 'experience', label: 'Experience' },
+      { key: 'education', label: 'Education' },
+    ],
+    accentHex: '#a3e635',
+    onePage: false,
+    bodyFont: 'mono',
+    atsNote: 'ATS-safe — single column with standard section names.',
+  },
+  {
     id: 'sidebar',
     name: 'Sidebar',
     description:
       'Two-column layout: skills and education in a left rail, experience as the main column.',
     layout: 'sidebar',
+    railSide: 'left',
     sections: [
       { key: 'skills', label: 'Skills' },
       { key: 'summary', label: 'Summary' },
@@ -142,6 +214,24 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       { key: 'education', label: 'Education' },
     ],
     accentHex: '#22d3ee',
+    onePage: false,
+    atsNote:
+      'Design-forward — two columns can confuse some ATS systems; use for roles where design matters.',
+  },
+  {
+    id: 'split',
+    name: 'Split',
+    description:
+      'Two-column layout: skills and education in a right rail, experience leads on the left.',
+    layout: 'sidebar',
+    railSide: 'right',
+    sections: [
+      { key: 'experience', label: 'Experience' },
+      { key: 'summary', label: 'Summary' },
+      { key: 'skills', label: 'Skills' },
+      { key: 'education', label: 'Education' },
+    ],
+    accentHex: '#f59e0b',
     onePage: false,
     atsNote:
       'Design-forward — two columns can confuse some ATS systems; use for roles where design matters.',
@@ -160,6 +250,54 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
     accentHex: '#38bdf8',
     onePage: true,
     atsNote: 'Optimized for one page — good for senior candidates.',
+  },
+  {
+    id: 'bold',
+    name: 'Bold',
+    description:
+      'Big centered header with a magenta accent — makes your name the hero.',
+    layout: 'single',
+    sections: [
+      { key: 'summary', label: 'Summary' },
+      { key: 'skills', label: 'Skills' },
+      { key: 'experience', label: 'Experience' },
+      { key: 'education', label: 'Education' },
+    ],
+    accentHex: '#ec4899',
+    onePage: false,
+    atsNote: 'ATS-safe — single column with standard section names.',
+  },
+  {
+    id: 'monochrome',
+    name: 'Monochrome',
+    description:
+      'All-ink serif with a black accent and no rule — quiet, classic, universal.',
+    layout: 'single',
+    sections: [
+      { key: 'summary', label: 'Summary' },
+      { key: 'skills', label: 'Skills' },
+      { key: 'experience', label: 'Experience' },
+      { key: 'education', label: 'Education' },
+    ],
+    accentHex: '#111827',
+    onePage: false,
+    bodyFont: 'serif',
+    atsNote: 'ATS-safe — single column with standard section names.',
+  },
+  {
+    id: 'nordic',
+    name: 'Nordic',
+    description: 'Clean scandi look — teal accent, left header and a thin rule.',
+    layout: 'single',
+    sections: [
+      { key: 'summary', label: 'Summary' },
+      { key: 'skills', label: 'Skills' },
+      { key: 'experience', label: 'Experience' },
+      { key: 'education', label: 'Education' },
+    ],
+    accentHex: '#0d9488',
+    onePage: false,
+    atsNote: 'ATS-safe — single column with standard section names.',
   },
 ];
 
