@@ -329,11 +329,36 @@ describe.skipIf(!backendAvailable)(
         expect(Array.isArray(await api.getSavedContacts())).toBe(true);
       });
 
-      // TODO(backend): handleGetContactsSearch returns a bare [] instead of
-      // { contacts, sources, errors }. Frontend treats it defensively as empty.
-      it('contacts search resolves (documents backend stub shape)', async () => {
-        const res = await api.searchContacts('Stripe', 'stripe.com');
-        expect(Array.isArray(res)).toBe(true);
+      it('searches contacts via OSINT and returns {contacts, sources, errors}', async () => {
+        const res = await api.searchContacts('Acme', 'acme.com');
+        expect(Array.isArray(res.contacts)).toBe(true);
+        expect(Array.isArray(res.sources)).toBe(true);
+        expect(Array.isArray(res.errors)).toBe(true);
+        // The pattern source always generates contacts — no API keys needed.
+        expect(res.contacts.length).toBeGreaterThan(0);
+        expect(typeof res.contacts[0]!.email).toBe('string');
+        expect(res.contacts.some((c) => c.source === 'pattern')).toBe(true);
+      }, 30_000);
+
+      it('saved contacts round-trip through the backend', async () => {
+        const saved = await api.saveContact({
+          company: 'Stripe',
+          domain: 'stripe.com',
+          name: 'Hiring Team',
+          title: 'Recruiter',
+          email: 'hiring@stripe.com',
+          emailType: 'pattern',
+          source: 'pattern',
+          confidence: 40,
+        } as Parameters<typeof api.saveContact>[0]);
+        expect(saved.id).toBeGreaterThan(0);
+
+        const list = await api.getSavedContacts();
+        expect(list.some((c) => c.id === saved.id)).toBe(true);
+
+        await api.deleteContact(saved.id);
+        const after = await api.getSavedContacts();
+        expect(after.some((c) => c.id === saved.id)).toBe(false);
       });
     });
 

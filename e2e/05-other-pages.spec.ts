@@ -23,7 +23,7 @@ test('companies page: add a company through the backend', async ({ page }) => {
   await expect(page.getByText(/acme health/i).first()).toBeVisible();
 });
 
-test('contacts page: search against the backend stub shows the empty state', async ({
+test('contacts page: OSINT search surfaces pattern contacts, then save/delete', async ({
   page,
 }) => {
   await ensureOnboarded();
@@ -32,9 +32,31 @@ test('contacts page: search against the backend stub shows the empty state', asy
     page.getByRole('heading', { name: /hr contact finder/i }),
   ).toBeVisible();
 
+  // Company + domain → the pattern source always generates emails like
+  // careers@stripe.com (works without Hunter/Apollo keys).
   await page.getByPlaceholder(/linear, vercel, stripe/i).fill('Stripe');
+  await page.getByPlaceholder(/linear\.app/i).fill('stripe.com');
   await page.getByRole('button', { name: /search contacts/i }).click();
-  await expect(page.getByText(/no contacts found/i)).toBeVisible();
+  await expect(page.getByText(/careers@stripe\.com/i).first()).toBeVisible({
+    timeout: 30_000,
+  });
+
+  // Save the guaranteed pattern contact (careers@stripe.com) — the row is a
+  // flex div containing that email; the first GitHub/OSINT results vary with
+  // the network, so scope the Save click to this row.
+  const careersRow = page
+    .getByText(/careers@stripe\.com/i)
+    .first()
+    .locator(
+      'xpath=ancestor::div[contains(@class, "flex items-center")][last()]',
+    );
+  await careersRow.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: /^saved/i }).click();
+  await expect(page.getByText(/careers@stripe\.com/i).first()).toBeVisible();
+
+  // Delete it — the list empties back to the empty state.
+  await page.getByRole('button', { name: /delete contact/i }).click();
+  await expect(page.getByText(/no saved contacts yet/i)).toBeVisible();
 });
 
 test('outreach page: opt-in gate + setup tab render', async ({ page }) => {
