@@ -368,6 +368,11 @@ function TemplatePicker({
                 <ShieldCheck className="h-3 w-3 shrink-0" />
                 {t.atsNote}
               </span>
+              {t.source && (
+                <span className="truncate font-mono text-[9px] text-slate-600">
+                  ⤳ {t.source}
+                </span>
+              )}
             </button>
             {canPreview && (
               <a
@@ -438,6 +443,8 @@ export function ImproveTab() {
     return {
       fullName: name || undefined,
       headline: targetRole.trim() || roles[0] || undefined,
+      email: contact?.email || undefined,
+      phone: contact?.phone || undefined,
       summary: profile?.summary || undefined,
       skills: profile?.skills?.length ? profile.skills : undefined,
       experience: experience.length ? experience : undefined,

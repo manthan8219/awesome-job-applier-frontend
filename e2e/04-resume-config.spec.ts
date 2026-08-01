@@ -31,12 +31,12 @@ test('resume studio: New resume step shows an honest readiness state without AI'
   await page.getByRole('button', { name: /new resume/i }).click();
   await expect(page.getByText(/step 3 — new resume/i)).toBeVisible();
 
-  // Template picker comes from the real backend registry (12 curated designs).
+  // Template picker comes from the real backend registry (8 curated designs).
   await expect(page.getByText(/choose the design/i)).toBeVisible();
-  await expect(page.getByRole('button', { name: /^classic/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /sidebar/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /developer/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /split/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^jake/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /awesome-cv/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /deedy/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /kendall/i })).toBeVisible();
 
   // Capacity chips come from the real backend budgets (roles/bullets/skills).
   await expect(page.getByText(/≤5 roles/i).first()).toBeVisible();
@@ -53,7 +53,7 @@ test('resume studio: New resume step shows an honest readiness state without AI'
   const sampleLink = page.getByRole('link', { name: /view sample pdf/i }).first();
   await expect(sampleLink).toHaveAttribute(
     'href',
-    /\/resume\/templates\/classic\/preview\.pdf$/,
+    /\/(resume\/templates\/(jake|awesome-cv|deedy|mcdowell|billryan|kendall|macchiato|banking)\/preview\.pdf)$/,
   );
 
   // No AI keys in the E2E env → the checklist explains why Generate is locked.

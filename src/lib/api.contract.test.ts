@@ -434,29 +434,37 @@ describe.skipIf(!backendAvailable)(
 
       it('getResumeTemplates returns the curated registry', async () => {
         const templates = await api.getResumeTemplates();
-        expect(templates.length).toBeGreaterThanOrEqual(12);
-        const classic = templates.find((t) => t.id === 'classic');
-        expect(classic).toBeDefined();
-        expect(classic?.name).toBeTruthy();
-        expect(classic?.layout).toBeTruthy();
-        expect(classic?.sections.length).toBeGreaterThan(0);
-        expect(classic?.accentHex).toMatch(/^#/);
+        expect(templates.length).toBeGreaterThanOrEqual(8);
+        const jake = templates.find((t) => t.id === 'jake');
+        expect(jake).toBeDefined();
+        expect(jake?.name).toBeTruthy();
+        expect(jake?.layout).toBeTruthy();
+        expect(jake?.sections.length).toBeGreaterThan(0);
+        expect(jake?.accentHex).toMatch(/^#/);
+        expect(jake?.source).toBeTruthy();
 
-        // The expanded registry exposes font + rail tokens where relevant.
-        const developer = templates.find((t) => t.id === 'developer');
-        expect(developer?.bodyFont).toBe('mono');
-        const split = templates.find((t) => t.id === 'split');
-        expect(split?.railSide).toBe('right');
-        // Header alignment + rule tokens drive the faithful gallery miniatures.
-        expect(classic?.headerAlign).toBe('left');
-        expect(classic?.showRule).toBe(true);
-        const executive = templates.find((t) => t.id === 'executive');
-        expect(executive?.headerAlign).toBe('center');
-        expect(executive?.showRule).toBe(false);
+        // Real-design tokens distinguish the curated templates.
+        expect(jake?.sectionStyle).toBe('caps');
+        const acv = templates.find((t) => t.id === 'awesome-cv');
+        expect(acv?.sectionStyle).toBe('marker');
+        const deedy = templates.find((t) => t.id === 'deedy');
+        expect(deedy?.onePage).toBe(true);
+        expect(deedy?.columnRatio).toBeGreaterThan(0.7);
+        const mcd = templates.find((t) => t.id === 'mcdowell');
+        expect(mcd?.sectionStyle).toBe('soft');
+        const bill = templates.find((t) => t.id === 'billryan');
+        expect(bill?.bodyFont).toBe('serif');
+        const kendall = templates.find((t) => t.id === 'kendall');
+        expect(kendall?.railBackground).toBe('dark');
+        const macchiato = templates.find((t) => t.id === 'macchiato');
+        expect(macchiato?.railBackground).toBe('accent');
+        expect(macchiato?.nameStyle).toBe('colored');
+        const banking = templates.find((t) => t.id === 'banking');
+        expect(banking?.contactLine).toBe(true);
+        expect(banking?.sectionStyle).toBe('ruleAbove');
+
         // Every template declares a positive content budget (the AI writes to
-        // it and the planner enforces it); compact is the one-page design.
-        const compact = templates.find((t) => t.id === 'compact');
-        expect(compact?.budget?.targetPages).toBe(1);
+        // it and the planner enforces it); deedy is the one-page design.
         for (const t of templates) {
           expect(t.budget).toBeDefined();
           expect(t.budget?.maxRoles).toBeGreaterThan(0);
@@ -465,16 +473,16 @@ describe.skipIf(!backendAvailable)(
         }
         const ids = templates.map((t) => t.id);
         for (const id of [
-          'classic', 'modern', 'sidebar', 'compact', 'executive', 'minimal',
-          'academic', 'developer', 'split', 'bold', 'monochrome', 'nordic',
+          'jake', 'awesome-cv', 'deedy', 'mcdowell',
+          'billryan', 'kendall', 'macchiato', 'banking',
         ]) {
           expect(ids).toContain(id);
         }
       });
 
       it('template preview URLs stream a real PDF from the backend renderer', async () => {
-        // Exercise both renderers: single-column (classic) and sidebar (split).
-        for (const id of ['classic', 'split']) {
+        // Exercise both renderers: single-column (jake) and sidebar (deedy).
+        for (const id of ['jake', 'deedy']) {
           const res = await fetch(api.templatePreviewUrl(id), {
             credentials: 'include',
           });
@@ -486,7 +494,7 @@ describe.skipIf(!backendAvailable)(
       });
 
       it('previewTemplateWithData renders a user resume doc into a real PDF', async () => {
-        const blob = await api.previewTemplateWithData('classic', {
+        const blob = await api.previewTemplateWithData('jake', {
           fullName: 'Ada Lovelace',
           headline: 'Senior Backend Engineer',
           summary: 'Backend engineer shipping distributed systems at scale.',

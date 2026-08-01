@@ -98,6 +98,16 @@
 - [x] **Frontend preview-with-data action** — the template gallery has a "Preview with my data" button: assembles `PreviewResumeDoc` from the profile analysis (name, summary, skills, suitable roles) + work projects (roles/bullets) + target role, POSTs it, and shows the rendered PDF inline (blob URL) — lets the user judge their content in a design before spending AI credits
 - [x] Gates: backend `go build/vet/test` green (library round-trip, preview-with-data + library-PDF API tests in isolated $HOME); frontend lint/build green; vitest (incl. inline-PDF + preview-with-data component tests, live contract for `previewTemplateWithData`); resume e2e asserts the button against the real backend
 
+### ✅ Real templates (stop the generic look — adopt the famous open-source designs)
+
+- [x] **Research** — surveyed GitHub's most-starred resume templates (Awesome-CV 28k⭐, billryan 11k⭐, Deedy 5k⭐, latexcv 3.3k⭐, jakegut 2.8k⭐, mcdowell-cv 2.7k⭐) + the 400+ JSON Resume themes; verified licenses (MIT/Apache for the adopted ones)
+- [x] **8 real designs replace the 12 generic ones** — each adapted from a famous, proven template with its `source` attributed: **Jake** (jakegut — small-caps heads), **Awesome-CV** (posquit0 — square marker sections), **Deedy** (one-page asymmetric 0.76/0.22 columns), **McDowell** (soft gray heads), **BillRyan** (elegant serif), **Kendall** (dark sidebar rail), **Macchiato** (accent sidebar + accent name), **Banking** (moderncv centered name + contact line + ruled heads); old `classic` id stays as a legacy alias → Jake
+- [x] **New renderer tokens** — `sectionStyle` (plain/caps/marker/ruleAbove/soft), `nameStyle` (plain/centered/colored), `contactLine` (email · phone · location), `columnRatio` (asymmetric sidebars), `railBackground` (dark/accent/tint) — honored by BOTH the LaTeX renderer (style-aware `\rsec` macro, colorbox rails, ratio minipages) and the native gofpdf renderer (marker squares, filled rails, white rail text)
+- [x] **Contact data** — `ImprovedDoc` gains `email`/`phone`/`location`; the improve pipeline and the preview-with-data endpoint carry them (extracted from the resume analysis)
+- [x] **AI + planner updated** — `polishTemplateBlock` tells the writer the section style + contact-line header + design source; budgets re-derived per real design (Deedy one-page/75 chars, sidebar rails 60)
+- [x] **Frontend** — fallback registry + gallery miniatures now render the real design signatures (marker squares, dark/accent rails, colored names, contact lines, asymmetric columns); cards show the design `source`; `PreviewResumeDoc` carries email/phone
+- [x] Gates: backend `go build/vet/test` green (registry=8, token assertions, LaTeX marker/colorbox/ratio checks, all 8 native PDFs render); frontend lint/build green; vitest incl. live contract asserting the new tokens; e2e asserts Jake/Awesome-CV/Deedy/Kendall against the real backend
+
 ### 🔵 Product leaps (advisory)
 
 - [x] Profession-aware onboarding (doctor/engineer/designer…) — `SuggestProfession` (backend) + detected-profession badge in the onboarding wizard (KAN-44)
