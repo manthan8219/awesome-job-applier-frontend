@@ -432,6 +432,17 @@ describe.skipIf(!backendAvailable)(
         expect(typeof r.valid).toBe('boolean');
       });
 
+      it('getResumeTemplates returns the curated registry', async () => {
+        const templates = await api.getResumeTemplates();
+        expect(templates.length).toBeGreaterThanOrEqual(4);
+        const classic = templates.find((t) => t.id === 'classic');
+        expect(classic).toBeDefined();
+        expect(classic?.name).toBeTruthy();
+        expect(classic?.layout).toBeTruthy();
+        expect(classic?.sections.length).toBeGreaterThan(0);
+        expect(classic?.accentHex).toMatch(/^#/);
+      });
+
       it('reanalyzeResume without a path returns a clean 400', async () => {
         await expect(api.reanalyzeResume()).rejects.toMatchObject({
           status: 400,

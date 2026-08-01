@@ -79,7 +79,7 @@ Primary endpoints used by `src/lib/api.ts`:
 | POST    | `/api/applications/{id}/approved` | Toggle review-queue approval |
 | GET/PUT | `/api/companies`, `/api/contacts/saved`, `/api/outreach/setup` | Companies / contacts / outreach |
 | GET     | `/api/logs`, `/api/usage` | Engine log + local footprint |
-| GET     | `/api/resume/analyze`, `/api/resume/projects`, `/api/resume/skills` | Resume studio |
+| GET     | `/api/resume/analyze`, `/api/resume/templates`, `/api/resume/projects`, `/api/resume/skills` | Resume studio + template registry |
 | POST    | `/api/job-titles/suggest` | AI title suggestions |
 
 Domain types live in `src/types/` (`index.ts` plus `resume.ts`, `companies.ts`,

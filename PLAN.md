@@ -70,6 +70,15 @@
 - [x] Real resume improve handler — `/resume/improve` runs `GenerateImproved` (profile + workcontext + skills), honest 400s without AI/resume, returns the `{previewMD, dir, review}` payload (KAN-40, PRs ready)
 - [x] Offline (no-AI) job-title suggestions — profession catalog so onboarding works without API keys (KAN-37)
 
+### ✅ Resume template registry (choose a design, fit the CV into it)
+
+- [x] **Backend template registry** — `internal/resume/template.go`: machine-readable `Template` manifests (id/name/layout/sections/accent/ATS note/one-page) for **Classic, Modern, Sidebar, Compact**; `GetTemplate` defaults to Classic (TUI/tailor callers unchanged)
+- [x] **Template-aware renderers** — `RenderMarkdownFor` / `RenderLaTeXFor` / `RenderNativePDFFor` follow each manifest (section order, two-column rail for Sidebar, accent colors, margins/fonts for Compact); old `RenderMarkdown`/`RenderLaTeX`/`EnsurePDF`/`RenderNativePDF` kept as Classic wrappers
+- [x] **Template-aware AI polish loop** — the creator prompt receives the selected template's sections/order/layout/one-page constraint (`polishTemplateBlock`) and the assessor judges the template-rendered Markdown, so content is written to fit the design
+- [x] **API** — `GET /api/resume/templates` (registry) + `POST /api/resume/improve` accepts `templateId` (400 on unknown) and returns `templateId`/`templateName`; version library records the template
+- [x] **Frontend** — `ResumeTemplate` types + offline `RESUME_TEMPLATES` fallback, `getResumeTemplates()` client + `useResumeTemplates` hook, and a **template picker** (cards with accent dot, layout icon, ATS note, 1-page badge) on the New-resume step; selection is passed with the generate call
+- [x] Gates: backend `go build/vet/test` (68 pkgs) green; frontend lint/build green; vitest (245) incl. contract test for `/resume/templates`; resume e2e spec extended + passing against the real backend
+
 ### 🔵 Product leaps (advisory)
 
 - [x] Profession-aware onboarding (doctor/engineer/designer…) — `SuggestProfession` (backend) + detected-profession badge in the onboarding wizard (KAN-44)

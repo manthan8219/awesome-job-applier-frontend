@@ -18,6 +18,7 @@ import type {
   ImproveOutput,
   ImproveRequest,
   ResumeAnalysis,
+  ResumeTemplate,
   WorkProject,
 } from '@/types/resume';
 import type { UsageSnapshot } from '@/types/usage';
@@ -305,6 +306,10 @@ export const api = {
 
   async getResumeAnalysis(): Promise<ResumeAnalysis> {
     return request<ResumeAnalysis>('/resume/analyze');
+  },
+
+  async getResumeTemplates(): Promise<ResumeTemplate[]> {
+    return request<ResumeTemplate[]>('/resume/templates');
   },
 
   async reanalyzeResume(path?: string): Promise<ResumeAnalysis> {

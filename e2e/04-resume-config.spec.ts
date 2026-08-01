@@ -31,6 +31,11 @@ test('resume studio: New resume step shows an honest readiness state without AI'
   await page.getByRole('button', { name: /new resume/i }).click();
   await expect(page.getByText(/step 3 — new resume/i)).toBeVisible();
 
+  // Template picker comes from the real backend registry.
+  await expect(page.getByText(/choose the design/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: /classic/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /sidebar/i })).toBeVisible();
+
   // No AI keys in the E2E env → the checklist explains why Generate is locked.
   await expect(page.getByText(/AI Assist on/i)).toBeVisible();
   await expect(
