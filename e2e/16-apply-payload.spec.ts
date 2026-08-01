@@ -22,6 +22,6 @@ test('submitted payload audit renders on an applied job detail (KAN-33)', async 
 
   await expect(page.getByText('resume.pdf')).toBeVisible();
   await expect(page.getByText(/why this role/i)).toBeVisible();
-  await expect(page.getByText('AI')).toBeVisible();
+  await expect(page.getByText('AI', { exact: true })).toBeVisible();
   await expect(page.getByText('because')).toBeVisible();
 });
