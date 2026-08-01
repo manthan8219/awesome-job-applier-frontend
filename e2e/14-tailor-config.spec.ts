@@ -20,7 +20,7 @@ test('config tailoring knobs persist through the real config API (KAN-20)', asyn
 
   // Toggle tailoring on and set the review-loop cap.
   await tailor.click();
-  const rounds = page.getByLabelText(/max tailoring rounds/i);
+  const rounds = page.getByLabel(/max tailoring rounds/i);
   await expect(rounds).toBeVisible();
   await rounds.fill('5');
 
@@ -38,5 +38,5 @@ test('config tailoring knobs persist through the real config API (KAN-20)', asyn
       name: /auto-tailor each high-fit application/i,
     }),
   ).toHaveAttribute('aria-checked', 'true');
-  await expect(page.getByLabelText(/max tailoring rounds/i)).toHaveValue('5');
+  await expect(page.getByLabel(/max tailoring rounds/i)).toHaveValue('5');
 });
