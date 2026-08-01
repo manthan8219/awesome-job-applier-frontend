@@ -161,8 +161,13 @@ primitive (primitives stay data-source-agnostic).
 ## 10. Commit & PR hygiene
 
 - Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`).
-- Keep PRs focused; run `npm run lint` + `npm run build` before pushing — the
-  build type-checks, so a green build means types are sound.
+- Keep PRs focused; run `npm run lint` + `npm run build` + `npm test` before
+  pushing — the build type-checks, so a green build means types are sound.
+- Run the deeper suites before merging UI changes: `npm run test:contract`
+  (every `api.ts` method against the real backend) and `npm run test:e2e`
+  (Playwright browser journey). Both need the Go toolchain + the
+  `../terminal-job` repo and use an isolated `$HOME`, so your real `~/.nexus`
+  data is never touched.
 - Don't commit `.env`; only `.env.example`. Keep secrets out of the bundle
   (any `VITE_` var is shipped to the client).
 

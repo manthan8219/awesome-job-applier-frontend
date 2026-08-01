@@ -32,3 +32,9 @@ coverage
 
 # Misc
 .cache
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+

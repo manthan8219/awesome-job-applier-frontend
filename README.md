@@ -54,6 +54,13 @@ needs changing when the backend runs elsewhere.
 | `npm run lint`      | Lint with ESLint                             |
 | `npm run format`    | Format `src/` with Prettier                  |
 | `npm run typecheck` | Type-check only                              |
+| `npm test`          | Unit + component tests (Vitest)              |
+| `npm run test:contract` | Contract tests — every `api.ts` method against the real Go backend |
+| `npm run test:e2e`  | Playwright browser E2E (builds + boots the real backend) |
+
+> `test:contract` and `test:e2e` require the Go toolchain and the
+> `../terminal-job` repo; both run against an isolated `$HOME` and never touch
+> your real `~/.nexus` data.
 
 ## 🔌 Backend contract
 
