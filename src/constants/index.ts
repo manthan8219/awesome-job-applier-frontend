@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   Briefcase,
   Building2,
   FileText,
@@ -34,6 +35,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/outreach', label: 'Outreach', icon: Send },
   { to: '/contacts', label: 'Contacts', icon: Users },
   { to: '/logs', label: 'Logs', icon: ScrollText },
+  { to: '/analytics', label: 'Analytics', icon: BarChart3 },
 ];
 
 /** Work-type options (mirrors the TUI's wtOptions). */
