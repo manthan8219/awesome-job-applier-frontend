@@ -150,6 +150,8 @@ export interface ReadyCheck {
   ok: boolean;
   label: string;
   hint: string;
+  /** Recommended but not required — never blocks onboarding completion. */
+  optional?: boolean;
 }
 
 export interface DashRecent {

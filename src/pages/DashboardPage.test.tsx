@@ -141,7 +141,11 @@ describe('DashboardPage', () => {
 
   it('surfaces an AI Assist check and nudge when AI is off', async () => {
     vi.spyOn(api, 'getMission').mockResolvedValue(
-      makeMission({ aiOn: false }),
+      makeMission({
+        aiOn: false,
+        nextAction:
+          'Next: turn on AI Assist to unlock fit-scoring and tailored answers',
+      }),
     );
     vi.spyOn(api, 'getApplications').mockResolvedValue([makeApp()]);
     // Default fixture config has aiAssist off.
@@ -153,7 +157,7 @@ describe('DashboardPage', () => {
     expect(
       await screen.findByText(/ai assist off — enable it in config/i),
     ).toBeInTheDocument();
-    // A guided next-action nudges toward AI once the profile basics are done.
+    // The backend-driven next action nudges toward AI once basics are done.
     expect(
       screen.getByText(/next: turn on ai assist to unlock/i),
     ).toBeInTheDocument();
@@ -161,7 +165,10 @@ describe('DashboardPage', () => {
 
   it('marks AI Assist on and hides the nudge when it is enabled', async () => {
     vi.spyOn(api, 'getMission').mockResolvedValue(
-      makeMission({ aiOn: true }),
+      makeMission({
+        aiOn: true,
+        nextAction: 'Start a run to search and apply',
+      }),
     );
     vi.spyOn(api, 'getApplications').mockResolvedValue([makeApp()]);
     vi.spyOn(api, 'getConfig').mockResolvedValue(
@@ -178,13 +185,17 @@ describe('DashboardPage', () => {
       await screen.findByText('AI Assist on'),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText(/next: turn on ai assist to unlock/i),
+      screen.queryByText(/turn on ai assist/i),
     ).not.toBeInTheDocument();
   });
 
   it('hides the AI nudge while a run is active', async () => {
     vi.spyOn(api, 'getMission').mockResolvedValue(
-      makeMission({ engineStatus: 'running', aiOn: false }),
+      makeMission({
+        engineStatus: 'running',
+        aiOn: false,
+        nextAction: 'Run in progress',
+      }),
     );
     vi.spyOn(api, 'getApplications').mockResolvedValue([makeApp()]);
     vi.spyOn(api, 'getConfig').mockResolvedValue(makeConfig());
@@ -192,7 +203,33 @@ describe('DashboardPage', () => {
     renderPage();
 
     expect(
-      screen.queryByText(/next: turn on ai assist to unlock/i),
+      screen.queryByText(/turn on ai assist/i),
     ).not.toBeInTheDocument();
+  });
+
+  it('does not duplicate an AI check the backend already sends', async () => {
+    vi.spyOn(api, 'getMission').mockResolvedValue(
+      makeMission({
+        aiOn: false,
+        checks: [
+          ...makeMission().checks,
+          {
+            key: 'ai-assist',
+            ok: false,
+            label: 'AI Assist on',
+            hint: 'AI Assist off — optional: fit-scoring & tailored answers',
+            optional: true,
+          },
+        ],
+      }),
+    );
+    vi.spyOn(api, 'getApplications').mockResolvedValue([makeApp()]);
+    vi.spyOn(api, 'getConfig').mockResolvedValue(makeConfig());
+
+    renderPage();
+
+    await screen.findByText(/ai assist off/i);
+    // Exactly one AI row — the frontend fallback must not append a second.
+    expect(screen.getAllByText(/ai assist off/i)).toHaveLength(1);
   });
 });
