@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Play, Square } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -39,7 +40,7 @@ function Pill({ label, value, tone, onToggle, toggleable }: PillProps) {
   );
 }
 
-export function ModeCard({
+export const ModeCard = memo(function ModeCard({
   engineStatus,
   modeName,
   modeHint,
@@ -129,4 +130,4 @@ export function ModeCard({
       )}
     </Card>
   );
-}
+});

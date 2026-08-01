@@ -35,7 +35,7 @@ export default function Sidebar() {
         ))}
       </nav>
       <div className="border-t border-white/5 p-4 font-mono text-[11px] text-slate-500">
-        <p>nexus v0.1.0 · mock</p>
+        <p>nexus v0.1.0 · api</p>
       </div>
     </aside>
   );

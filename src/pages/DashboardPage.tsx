@@ -1,5 +1,7 @@
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { PageLoader } from '@/components/ui/PageLoader';
+import { Card } from '@/components/ui/Card';
 import { TodayCard } from '@/components/dashboard/TodayCard';
 import { OnboardingCard } from '@/components/dashboard/OnboardingCard';
 import { ModeCard } from '@/components/dashboard/ModeCard';
@@ -7,11 +9,20 @@ import { NextAction } from '@/components/dashboard/NextAction';
 import { ProvidersGrid } from '@/components/dashboard/ProvidersGrid';
 import { LiveFeed } from '@/components/dashboard/LiveFeed';
 import { RecentApplications } from '@/components/dashboard/RecentApplications';
+import { RunSummaryBanner } from '@/components/dashboard/RunSummaryBanner';
+import { StaleNudge } from '@/components/dashboard/StaleNudge';
+import { NextRunCard } from '@/components/dashboard/NextRunCard';
+import { SectionLabel } from '@/components/dashboard/SectionLabel';
+import { OutcomeFunnel } from '@/components/jobs/OutcomeFunnel';
 import { useMission } from '@/hooks/useMission';
 import { useStartRun } from '@/hooks/useStartRun';
 import { useStopRun } from '@/hooks/useStopRun';
 import { useToggleDryRun } from '@/hooks/useToggleDryRun';
 import { useToggleAutoApply } from '@/hooks/useToggleAutoApply';
+import { useApplications } from '@/hooks/useApplications';
+import { useConfig } from '@/hooks/useConfig';
+import { useSetOutcome } from '@/hooks/useSetOutcome';
+import { localDayKey, shouldFireDailyRun } from '@/lib/schedule';
 
 export default function DashboardPage() {
   const { data: m, isLoading } = useMission();
@@ -19,10 +30,52 @@ export default function DashboardPage() {
   const stopRun = useStopRun();
   const toggleDryRun = useToggleDryRun();
   const toggleAutoApply = useToggleAutoApply();
+  const { data } = useApplications('');
+  const { data: cfg } = useConfig();
+  const setOutcome = useSetOutcome();
+  const lastFiredDay = useRef('');
+
+  const running = m?.engineStatus === 'running';
+  const apps = useMemo(() => data ?? [], [data]);
+
+  // Stable handlers so memoized children (ModeCard, StaleNudge) skip renders
+  // when only the live feed changed.
+  const onToggleDryRun = useCallback(() => {
+    toggleDryRun.mutate(!m?.dryRun);
+  }, [toggleDryRun, m?.dryRun]);
+  const onToggleAutoApply = useCallback(() => {
+    toggleAutoApply.mutate(!m?.autoApply);
+  }, [toggleAutoApply, m?.autoApply]);
+  const onStart = useCallback(() => {
+    startRun.mutate({
+      dryRun: m?.dryRun ?? false,
+      autoApply: !!(m?.autoApply && m?.hasConsent),
+    });
+  }, [startRun, m?.dryRun, m?.autoApply, m?.hasConsent]);
+  const onStop = useCallback(() => stopRun.mutate(), [stopRun]);
+  const onMarkGhosted = useCallback(
+    (ids: number[]) => {
+      for (const id of ids) setOutcome.mutate({ id, outcome: 'ghosted' });
+    },
+    [setOutcome],
+  );
+
+  // While the dashboard is open, run one safe dry-run per day at the
+  // configured time (never auto-applies — consent untouched).
+  useEffect(() => {
+    const at = cfg?.dailyRunAt;
+    if (!cfg?.dailyRunEnabled || !at || running) return;
+    const id = window.setInterval(() => {
+      const now = new Date();
+      if (shouldFireDailyRun(at, now, lastFiredDay.current)) {
+        lastFiredDay.current = localDayKey(now);
+        startRun.mutate({ dryRun: true, autoApply: false });
+      }
+    }, 30_000);
+    return () => window.clearInterval(id);
+  }, [cfg?.dailyRunEnabled, cfg?.dailyRunAt, running, startRun]);
 
   if (isLoading || !m) return <PageLoader label="Connecting to Mission Control" />;
-
-  const running = m.engineStatus === 'running';
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-5">
@@ -38,6 +91,7 @@ export default function DashboardPage() {
         </p>
       </header>
 
+      <RunSummaryBanner snapshot={m} />
       <NextAction text={m.nextAction} />
 
       <div className="grid gap-5 lg:grid-cols-3">
@@ -72,16 +126,25 @@ export default function DashboardPage() {
             hasConsent={m.hasConsent}
             errMsg={m.errMsg}
             startPending={startRun.isPending}
-            onToggleDryRun={() => toggleDryRun.mutate(!m.dryRun)}
-            onToggleAutoApply={() => toggleAutoApply.mutate(!m.autoApply)}
-            onStart={() =>
-              startRun.mutate({ dryRun: m.dryRun, autoApply: m.autoApply && m.hasConsent })
-            }
-            onStop={() => stopRun.mutate()}
+            onToggleDryRun={onToggleDryRun}
+            onToggleAutoApply={onToggleAutoApply}
+            onStart={onStart}
+            onStop={onStop}
           />
           <OnboardingCard
             checks={m.checks}
             onboardingComplete={m.onboardingComplete}
+          />
+          <Card className="p-4">
+            <SectionLabel>Pipeline</SectionLabel>
+            <div className="mt-3">
+              <OutcomeFunnel apps={apps} />
+            </div>
+          </Card>
+          <StaleNudge apps={apps} onMarkGhosted={onMarkGhosted} />
+          <NextRunCard
+            enabled={cfg?.dailyRunEnabled ?? false}
+            at={cfg?.dailyRunAt}
           />
           <RecentApplications
             recent={m.recent}

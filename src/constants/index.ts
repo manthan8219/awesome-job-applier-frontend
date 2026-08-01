@@ -20,13 +20,14 @@ export interface NavItem {
 }
 
 /**
- * Nexus TUI tabs — Config is the default screen ("first thing is config").
- * Dashboard is at /dashboard. Resume, Jobs, Companies, Outreach, Contacts,
+ * Nexus app sections — the Dashboard is the default screen (first-run users
+ * land on /onboarding, then the Dashboard). Config is a secondary page for
+ * the full 39-field profile; Resume, Jobs, Companies, Outreach, Contacts,
  * and Logs mirror their TUI counterparts and are all live.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Config', icon: Settings },
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/config', label: 'Config', icon: Settings },
   { to: '/resume', label: 'Resume', icon: FileText },
   { to: '/jobs', label: 'Jobs', icon: Briefcase },
   { to: '/companies', label: 'Companies', icon: Building2 },
@@ -34,6 +35,9 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/contacts', label: 'Contacts', icon: Users },
   { to: '/logs', label: 'Logs', icon: ScrollText },
 ];
+
+/** Work-type options (mirrors the TUI's wtOptions). */
+export const WORK_TYPES = ['Remote', 'Onsite', 'Hybrid'] as const;
 
 import type { LiveStatus } from '@/types';
 
@@ -103,6 +107,16 @@ export const APP_STATUS_META: Record<
     label: 'failed',
     dot: 'bg-red-400',
     badge: 'bg-red-400/10 text-red-400 border-red-400/30',
+  },
+  queued: {
+    label: 'queued',
+    dot: 'bg-neon-violet',
+    badge: 'bg-neon-violet/10 text-neon-violet border-neon-violet/30',
+  },
+  'dry-run': {
+    label: 'dry-run',
+    dot: 'bg-slate-500',
+    badge: 'bg-slate-500/10 text-slate-400 border-slate-500/30',
   },
 };
 

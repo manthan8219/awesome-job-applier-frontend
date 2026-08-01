@@ -22,6 +22,17 @@ export interface ResumeProfile {
   error?: string;
 }
 
+/** Structured personal details extracted from a resume (for profile backfill). */
+export interface ResumeContact {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  linkedIn?: string;
+  years?: string;
+  skills?: string[];
+}
+
 /** Result of analyzing a resume file (mirrors resume.Result). */
 export interface ResumeAnalysis {
   valid: boolean;
@@ -29,6 +40,7 @@ export interface ResumeAnalysis {
   message: string;
   err?: string;
   profile: ResumeProfile | null;
+  contact?: ResumeContact | null;
 }
 
 /** A work project for resume context (mirrors workcontext.Project). */

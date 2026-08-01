@@ -19,7 +19,7 @@ export function RecentApplications({
     <Card className="p-5">
       <SectionLabel>Recent</SectionLabel>
       <div className="mt-3 space-y-1.5">
-        {recent.length === 0 ? (
+        {!recent || recent.length === 0 ? (
           <EmptyState
             icon={Clock}
             title="No applications yet"
@@ -27,7 +27,7 @@ export function RecentApplications({
             className="py-8"
           />
         ) : (
-          recent.map((r, i) => (
+          (recent ?? []).map((r, i) => (
             <div
               key={`${r.label}-${r.status}-${i}`}
               className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-white/5"

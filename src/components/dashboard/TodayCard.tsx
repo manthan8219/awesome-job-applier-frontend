@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { FileText } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { SectionLabel } from './SectionLabel';
@@ -24,7 +25,7 @@ function Stat({
   );
 }
 
-export function TodayCard({
+export const TodayCard = memo(function TodayCard({
   applied,
   skipped,
   failed,
@@ -73,4 +74,4 @@ export function TodayCard({
       </div>
     </Card>
   );
-}
+});

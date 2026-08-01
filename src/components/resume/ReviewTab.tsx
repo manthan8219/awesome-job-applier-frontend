@@ -40,7 +40,7 @@ function ListColumn({
     <div className="space-y-2">
       <SectionHeading>{title}</SectionHeading>
       <ul className="space-y-2">
-        {items.map((it, i) => (
+        {(items ?? []).map((it, i) => (
           <li key={`${title}-${i}`} className="flex items-start gap-2">
             <Icon className={cn('mt-0.5 h-4 w-4 shrink-0', tone)} />
             <span className="text-sm text-slate-300">{it}</span>
@@ -96,7 +96,7 @@ function ProfileBody({ profile }: { profile: ResumeProfile }) {
         <Card className="space-y-3 p-5">
           <SectionHeading>Strengths</SectionHeading>
           <div className="space-y-2.5">
-            {profile.strengthScores.slice(0, 5).map((s) => (
+            {(profile.strengthScores ?? []).slice(0, 5).map((s) => (
               <ScoreBar key={s.name} item={s} />
             ))}
           </div>
@@ -104,7 +104,7 @@ function ProfileBody({ profile }: { profile: ResumeProfile }) {
         <Card className="space-y-3 p-5">
           <SectionHeading>Role fit</SectionHeading>
           <div className="space-y-2.5">
-            {profile.roleFit.slice(0, 5).map((s) => (
+            {(profile.roleFit ?? []).slice(0, 5).map((s) => (
               <ScoreBar key={s.name} item={s} />
             ))}
           </div>
@@ -112,7 +112,7 @@ function ProfileBody({ profile }: { profile: ResumeProfile }) {
         <Card className="space-y-3 p-5">
           <SectionHeading>Skill scores</SectionHeading>
           <div className="space-y-2.5">
-            {profile.skillScores.slice(0, 6).map((s) => (
+            {(profile.skillScores ?? []).slice(0, 6).map((s) => (
               <ScoreBar key={s.name} item={s} />
             ))}
           </div>
@@ -123,7 +123,7 @@ function ProfileBody({ profile }: { profile: ResumeProfile }) {
         <Card className="space-y-3 p-5">
           <SectionHeading>Suitable roles</SectionHeading>
           <div className="flex flex-wrap gap-2">
-            {profile.suitableRoles.map((r) => (
+            {(profile.suitableRoles ?? []).map((r) => (
               <Chip key={r}>{r}</Chip>
             ))}
           </div>
@@ -131,7 +131,7 @@ function ProfileBody({ profile }: { profile: ResumeProfile }) {
         <Card className="space-y-3 p-5">
           <SectionHeading>Industries</SectionHeading>
           <div className="flex flex-wrap gap-2">
-            {profile.industries.map((r) => (
+            {(profile.industries ?? []).map((r) => (
               <Chip key={r}>{r}</Chip>
             ))}
           </div>
@@ -141,7 +141,7 @@ function ProfileBody({ profile }: { profile: ResumeProfile }) {
       <Card className="space-y-3 p-5">
         <SectionHeading>How to fix it</SectionHeading>
         <ol className="space-y-2.5">
-          {profile.improvements.map((tip, i) => (
+          {(profile.improvements ?? []).map((tip, i) => (
             <li key={`tip-${i}`} className="flex items-start gap-2.5">
               <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md bg-neon-amber/10 text-[11px] font-bold text-neon-amber">
                 {i + 1}

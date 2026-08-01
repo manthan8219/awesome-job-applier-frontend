@@ -4,7 +4,7 @@ import { api } from '@/lib/api';
 /**
  * The full Mission Control snapshot. Polled continuously so the live feed,
  * provider progress, and engine status update in real time while a run is
- * active (the mock run state mutates on its own timer).
+ * active on the backend.
  */
 export function useMission() {
   return useQuery({

@@ -25,9 +25,10 @@ easy. The first screen is the **Mission Control dashboard** (mirrors the TUI's
 The other TUI tabs (Config, Resume, Jobs, Companies, Outreach, Contacts,
 Logs) are routed as "coming soon" placeholders until they are built.
 
-The app ships with a **mock mode** (`VITE_USE_MOCK=true`) so it runs fully
-end-to-end without a backend. Flip the flag to `false` and point
-`VITE_API_BASE_URL` at the real backend to go live.
+The app talks to the real Nexus backend: start it with `nexus --api` (the Go
+binary from the `../terminal-job` repo) and the UI renders the same Mission
+Control screens against the live API. The vite dev server proxies `/api` to
+`localhost:8080` for you.
 
 ## 2. Tech stack
 
@@ -48,8 +49,12 @@ Node **>=18** is required.
 ## 3. Getting started
 
 ```bash
+# 1. Start the Nexus backend (from ../terminal-job):
+go build -o nexus . && ./nexus --api        # serves :8080/api
+
+# 2. Frontend
 npm install
-cp .env.example .env      # adjust VITE_API_BASE_URL / VITE_USE_MOCK
+cp .env.example .env      # adjust VITE_API_BASE_URL if needed
 npm run dev               # http://localhost:5173
 npm run build             # type-check (tsc -b) + production build
 npm run lint

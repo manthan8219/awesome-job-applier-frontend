@@ -8,14 +8,9 @@ import { PageLoader } from '@/components/ui/PageLoader';
 import { useApplications } from '@/hooks/useApplications';
 import { useSetOutcome } from '@/hooks/useSetOutcome';
 import { APP_STATUS_META, OUTCOME_CYCLE, OUTCOME_META } from '@/constants';
+import { nextOutcome } from '@/lib/applications';
 import { formatDateTime, formatRelativeTime } from '@/lib/utils';
-import type { Application, Outcome } from '@/types';
-
-function nextOutcome(cur: Outcome): Outcome {
-  const idx = OUTCOME_CYCLE.indexOf(cur);
-  if (idx < 0 || idx >= OUTCOME_CYCLE.length - 1) return '';
-  return OUTCOME_CYCLE[idx + 1] ?? '';
-}
+import type { Application } from '@/types';
 
 function Meta({ label, value }: { label: string; value: string }) {
   return (
@@ -144,13 +139,13 @@ export default function JobDetailPage() {
                 onClick={() =>
                   setOutcome.mutate({
                     id: app.id,
-                    outcome: nextOutcome(app.outcome),
+                    outcome: nextOutcome(app.outcome, OUTCOME_CYCLE),
                   })
                 }
               >
                 Cycle outcome →{' '}
-                {nextOutcome(app.outcome)
-                  ? OUTCOME_META[nextOutcome(app.outcome)].label
+                {nextOutcome(app.outcome, OUTCOME_CYCLE)
+                  ? OUTCOME_META[nextOutcome(app.outcome, OUTCOME_CYCLE)].label
                   : 'clear'}
               </Button>
             )}

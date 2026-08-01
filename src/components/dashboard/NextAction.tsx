@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export function NextAction({ text }: { text: string }) {
+export const NextAction = memo(function NextAction({ text }: { text: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -8 }}
@@ -12,4 +13,4 @@ export function NextAction({ text }: { text: string }) {
       <p className="text-sm text-neon-amber/90">{text}</p>
     </motion.div>
   );
-}
+});

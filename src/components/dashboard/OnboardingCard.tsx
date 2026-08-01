@@ -13,8 +13,8 @@ export function OnboardingCard({
   checks: ReadyCheck[];
   onboardingComplete: boolean;
 }) {
-  const doneCount = checks.filter((c) => c.ok).length;
-  const pct = (doneCount / checks.length) * 100;
+  const doneCount = (checks ?? []).filter((c) => c.ok).length;
+  const pct = checks.length > 0 ? (doneCount / checks.length) * 100 : 0;
 
   return (
     <Card className="p-5">
@@ -45,7 +45,7 @@ export function OnboardingCard({
       </div>
 
       <ul className="mt-4 space-y-2.5">
-        {checks.map((c) => (
+        {(checks ?? []).map((c) => (
           <li key={c.key} className="flex items-start gap-2.5">
             {c.ok ? (
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />

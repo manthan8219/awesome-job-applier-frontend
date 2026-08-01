@@ -7,12 +7,24 @@ export type EngineStatus = 'idle' | 'running' | 'done' | 'error' | 'stopped';
 /** Per-provider search progress (TUI ProviderProgress.Status). */
 export type ProviderStatus = 'idle' | 'searching' | 'done' | 'error';
 
+/** Per-provider progress entry from the API (backend ProviderStatus struct). */
+export interface ProgressEntry {
+  status: string;
+  count?: number;
+  errMsg?: string;
+}
+
 /** A line in the live run feed / recent list (TUI DashRecent.Status). */
 export type LiveStatus =
   'found' | 'applied' | 'failed' | 'queued' | 'skipped' | 'dry-run';
 
 /** Application status (store.Status). */
-export type AppStatus = 'applied' | 'skipped' | 'failed';
+export type AppStatus =
+  | 'applied'
+  | 'skipped'
+  | 'failed'
+  | 'queued'
+  | 'dry-run';
 
 /** Post-apply pipeline stage (store.Outcome). */
 export type Outcome =
@@ -35,6 +47,7 @@ export interface Application {
   description?: string; // full job description (enriched)
   outcome: Outcome;
   outcomeAt: string;
+  approved?: boolean; // user approved this queued job for a real apply
 }
 
 /** Onboarding-relevant subset of config.Config. */
@@ -51,7 +64,7 @@ export interface NexusConfig {
   skills?: string[];
   // Job preferences
   targetJobTitles: string;
-  jobIntent: string;
+  jobIntent?: string; // omitted by the backend when empty (json omitempty)
   workType: string;
   targetLocations: string;
   currency?: string;
@@ -105,6 +118,10 @@ export interface NexusConfig {
   tailorMaxRounds?: number;
   // Career scraper
   scraperTargets?: string;
+  // Automation
+  dailyRunEnabled?: boolean; // run a safe dry-run search once a day
+  dailyRunAt?: string; // "HH:MM" 24h — when the daily dry-run fires
+  emailNotifications?: boolean; // send run summaries by email (backend)
 }
 
 export interface ReadyCheck {
@@ -154,7 +171,7 @@ export interface MissionSnapshot {
 
   // PROVIDERS
   providers: string[];
-  progress: Record<string, ProviderStatus>;
+  progress: Record<string, ProgressEntry>;
 
   // LIVE
   foundCount: number;

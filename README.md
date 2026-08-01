@@ -17,7 +17,8 @@ live output — all wrapped in a smooth, neon, animated interface.
 - **Cancel** running/queued jobs.
 - **Bespoke smooth loaders** — orbit, pulse rings, dot-wave, scan bar, and a
   blinking terminal cursor.
-- **Mock mode** — runs fully standalone with synthetic data.
+- **Real backend** — every screen talks to the Nexus Go API (`nexus --api`)
+  through `src/lib/api.ts`; no built-in mock layer.
 
 ## 🚀 Quick start
 
@@ -27,14 +28,21 @@ cp .env.example .env
 npm run dev          # → http://localhost:5173
 ```
 
-The app starts in **mock mode** (`VITE_USE_MOCK=true`) so you can explore it
-with no backend. To connect the real backend:
+The app requires the **Nexus backend** (the Go CLI repo, `../terminal-job`).
+Start it in API mode, then run the UI:
 
 ```bash
-# .env
-VITE_API_BASE_URL=http://localhost:8080/api
-VITE_USE_MOCK=false
+# 1. Backend (from ../terminal-job)
+go build -o nexus . && ./nexus --api          # serves http://localhost:8080/api
+
+# 2. Frontend
+npm install
+cp .env.example .env
+npm run dev                                   # → http://localhost:5173
 ```
+
+Vite proxies `/api` to `localhost:8080` in dev, so `VITE_API_BASE_URL` only
+needs changing when the backend runs elsewhere.
 
 ## 📜 Scripts
 
@@ -49,18 +57,26 @@ VITE_USE_MOCK=false
 
 ## 🔌 Backend contract
 
-Expected REST endpoints (consumed by `src/lib/api.ts`):
+The UI consumes the Nexus Go API (`nexus --api`), served at `/api` and proxied
+by Vite in dev. Full route list in `../terminal-job/internal/api/server.go`.
+Primary endpoints used by `src/lib/api.ts`:
 
-| Method | Path                  | Returns              |
-| ------ | --------------------- | -------------------- |
-| GET    | `/jobs`               | `Job[]`              |
-| GET    | `/jobs/:id`           | `Job`                |
-| GET    | `/jobs/:id/logs`      | `JobLog[]`           |
-| GET    | `/stats`              | `JobStats`           |
-| POST   | `/jobs`               | `Job` (created)      |
-| POST   | `/jobs/:id/cancel`    | `Job` (cancelled)    |
+| Method | Path | Purpose |
+| ------ | ---- | ------- |
+| GET    | `/api/mission` | Dashboard snapshot (stats, checks, mode, providers, live feed) |
+| GET/PUT/PATCH | `/api/config` | Read / save / patch search profile |
+| POST/DELETE | `/api/run` | Start / stop the engine |
+| POST    | `/api/run/apply-selected` | Submit approved applications |
+| GET     | `/api/jobs` | Applications list (supports `?q=`) |
+| PATCH   | `/api/jobs/{id}/outcome` | Cycle pipeline outcome |
+| POST    | `/api/applications/{id}/approved` | Toggle review-queue approval |
+| GET/PUT | `/api/companies`, `/api/contacts/saved`, `/api/outreach/setup` | Companies / contacts / outreach |
+| GET     | `/api/logs`, `/api/usage` | Engine log + local footprint |
+| GET     | `/api/resume/analyze`, `/api/resume/projects`, `/api/resume/skills` | Resume studio |
+| POST    | `/api/job-titles/suggest` | AI title suggestions |
 
-Domain types live in [`src/types/index.ts`](src/types/index.ts).
+Domain types live in `src/types/` (`index.ts` plus `resume.ts`, `companies.ts`,
+`contacts.ts`, `outreach.ts`, `usage.ts`).
 
 ## 🧱 Project layout
 
