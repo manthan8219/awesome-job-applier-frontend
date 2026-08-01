@@ -53,6 +53,11 @@ export interface OutreachSetup {
   maxLinkedInPerDay: number;
   aiCompose: boolean;
   aiReview: boolean;
+  /** Referral-ask variant (KAN-28): email drafts become a warm referral ask. */
+  referralAsk: boolean;
+  /** Empty = built-in referral templates. */
+  referralSubjectTpl?: string;
+  referralBodyTpl?: string;
 }
 
 /** Permanent audit record of one outreach action (mirrors store.OutreachLogEntry). */

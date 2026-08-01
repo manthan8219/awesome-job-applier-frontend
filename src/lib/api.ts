@@ -244,6 +244,13 @@ export const api = {
       ),
       aiCompose: Boolean(raw.aiCompose),
       aiReview: Boolean(raw.aiReview),
+      referralAsk: Boolean(raw.referralAsk),
+      referralSubjectTpl:
+        typeof raw.referralSubjectTpl === 'string'
+          ? raw.referralSubjectTpl
+          : '',
+      referralBodyTpl:
+        typeof raw.referralBodyTpl === 'string' ? raw.referralBodyTpl : '',
     };
   },
 
