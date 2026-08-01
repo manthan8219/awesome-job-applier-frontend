@@ -21,6 +21,7 @@ import type {
   WorkProject,
 } from '@/types/resume';
 import type { UsageSnapshot } from '@/types/usage';
+import type { AnalyticsSnapshot } from '@/types/analytics';
 import type {
   NotifyChannel,
   NotifySummaryResult,
@@ -281,6 +282,21 @@ export const api = {
     });
   },
 
+  async setOutreachItemVariant(
+    id: string,
+    variant: string,
+  ): Promise<OutreachItem> {
+    // A/B test tagging (KAN-27): empty variant clears the tag. The Response
+    // Center compares reply rates across variants.
+    return request<OutreachItem>(
+      `/outreach/items/${encodeURIComponent(id)}/variant`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ variant }),
+      },
+    );
+  },
+
   async getOutreachLog(): Promise<OutreachLogEntry[]> {
     return request<OutreachLogEntry[]>('/outreach/log');
   },
@@ -451,6 +467,12 @@ export const api = {
 
   async getUsage(): Promise<UsageSnapshot> {
     return request<UsageSnapshot>('/usage');
+  },
+
+  /* ----------------------------- Analytics ----------------------------- */
+
+  async getAnalytics(): Promise<AnalyticsSnapshot> {
+    return request<AnalyticsSnapshot>('/analytics');
   },
 
   /* ---------------------------- Notifications -------------------------- */

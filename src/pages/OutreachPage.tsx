@@ -18,6 +18,7 @@ import { useOutreachSetup } from '@/hooks/useOutreachSetup';
 import { useSaveOutreachSetup } from '@/hooks/useSaveOutreachSetup';
 import { useBuildOutreachQueue } from '@/hooks/useBuildOutreachQueue';
 import { useSendOutreachItem } from '@/hooks/useSendOutreachItem';
+import { useSetOutreachItemVariant } from '@/hooks/useSetOutreachItemVariant';
 import { useOutreachLog } from '@/hooks/useOutreachLog';
 import { OUTREACH_STATUS_META } from '@/constants';
 import { cn } from '@/lib/utils';
@@ -208,11 +209,13 @@ function ChannelSub({
   items,
   build,
   send,
+  setVariant,
 }: {
   channel: OutreachChannel;
   items: OutreachItem[];
   build: ReturnType<typeof useBuildOutreachQueue>;
   send: ReturnType<typeof useSendOutreachItem>;
+  setVariant: ReturnType<typeof useSetOutreachItemVariant>;
 }) {
   const isEmail = channel === 'email';
   const Icon = isEmail ? Mail : Linkedin;
@@ -299,6 +302,24 @@ function ChannelSub({
                   <p className="text-xs text-red-400">⚠ {it.error}</p>
                 )}
                 <div className="flex items-center gap-2">
+                  {isEmail && (
+                    <select
+                      aria-label={`A/B variant for ${it.company}`}
+                      value={it.variant ?? ''}
+                      disabled={setVariant.isPending}
+                      onChange={(e) =>
+                        setVariant.mutate({
+                          id: it.id,
+                          variant: e.target.value,
+                        })
+                      }
+                      className="rounded-lg border border-white/10 bg-ink-800/60 px-2 py-1 text-[10px] text-slate-300 focus:border-neon-cyan/40 focus:outline-none disabled:opacity-50"
+                    >
+                      <option value="">No variant</option>
+                      <option value="A">Variant A</option>
+                      <option value="B">Variant B</option>
+                    </select>
+                  )}
                   <Button
                     variant={canSend ? 'primary' : 'secondary'}
                     size="sm"
@@ -400,6 +421,7 @@ export default function OutreachPage() {
   const { data: items, isLoading: itemsLoading } = useOutreachItems();
   const build = useBuildOutreachQueue();
   const send = useSendOutreachItem();
+  const setVariant = useSetOutreachItemVariant();
 
   const emailItems = (items ?? []).filter((i) => i.channel === 'email');
   const liItems = (items ?? []).filter((i) => i.channel === 'linkedin');
@@ -498,6 +520,7 @@ export default function OutreachPage() {
             items={emailItems}
             build={build}
             send={send}
+            setVariant={setVariant}
           />
         ))}
 
@@ -514,6 +537,7 @@ export default function OutreachPage() {
             items={liItems}
             build={build}
             send={send}
+            setVariant={setVariant}
           />
         ))}
 

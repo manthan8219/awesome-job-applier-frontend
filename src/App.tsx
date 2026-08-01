@@ -14,6 +14,7 @@ import OutreachPage from '@/pages/OutreachPage';
 import ContactsPage from '@/pages/ContactsPage';
 import LogsPage from '@/pages/LogsPage';
 import AnalyticsPage from '@/pages/AnalyticsPage';
+import ResponsePage from '@/pages/ResponsePage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/logs" element={<LogsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/response" element={<ResponsePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>

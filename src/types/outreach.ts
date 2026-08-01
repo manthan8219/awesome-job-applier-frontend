@@ -43,6 +43,8 @@ export interface OutreachItem {
   createdAt: string;
   updatedAt: string;
   sentAt?: string;
+  /** A/B test variant tag (KAN-27): e.g. "A" or "B"; empty = untagged. */
+  variant?: string;
 }
 
 /** Setup / consent state for the Outreach hub (mirrors the TUI setup sub-tab). */
