@@ -65,10 +65,10 @@
 ### 🟠 Backend surface completion
 
 - [x] Real companies CRUD — backend persisted store (`~/.nexus/companies.db`) + GET/PUT/refresh/jobs handlers (KAN-36); frontend Companies page works against real data
-- [ ] Real contacts OSINT search + saved contacts (today stubs)
-- [ ] Real outreach build/send (the Go repo has `internal/outreach`)
+- [x] Real contacts OSINT search + saved contacts — `internal/contacts` store + `GET /contacts/search` running the full OSINT finder (KAN-38)
+- [x] Real outreach build/send/log — `outreach_notify.go` wired to the Go pipeline: setup from config, idempotent build from applied jobs, real send (honest 400 without creds), audit log (KAN-39, PRs ready)
 - [ ] Real resume improve handler
-- [ ] Offline (no-AI) job-title suggestions — profession catalog so onboarding works without API keys
+- [x] Offline (no-AI) job-title suggestions — profession catalog so onboarding works without API keys (KAN-37)
 
 ### 🔵 Product leaps (advisory)
 
