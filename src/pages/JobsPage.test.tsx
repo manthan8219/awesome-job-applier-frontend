@@ -107,7 +107,9 @@ describe('JobsPage review flow', () => {
       await screen.findByRole('button', { name: /apply approved \(1\)/i }),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /apply approved \(1\)/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /apply approved \(1\)/i }),
+    );
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
     // Consent is given in context: checkbox gates the submit button.

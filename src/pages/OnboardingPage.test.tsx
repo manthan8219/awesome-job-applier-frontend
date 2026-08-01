@@ -39,22 +39,30 @@ describe('OnboardingPage', () => {
     renderPage();
 
     const input = await screen.findByLabelText(/what job do you want/i);
-    fireEvent.change(input, { target: { value: 'Senior Go Engineer, remote' } });
+    fireEvent.change(input, {
+      target: { value: 'Senior Go Engineer, remote' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /find my roles/i }));
 
     expect(await screen.findByText('Senior Go Engineer')).toBeInTheDocument();
     expect(screen.getByText('Platform Engineer')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /show me jobs/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /show me jobs/i }),
+    ).toBeInTheDocument();
   });
 
   it('surfaces an honest error when AI title suggestions are unavailable', async () => {
     vi.spyOn(api, 'getConfig').mockResolvedValue(emptyProfile());
-    vi.spyOn(api, 'suggestJobTitles').mockRejectedValue(new Error('AI Assist off'));
+    vi.spyOn(api, 'suggestJobTitles').mockRejectedValue(
+      new Error('AI Assist off'),
+    );
 
     renderPage();
 
     const input = await screen.findByLabelText(/what job do you want/i);
-    fireEvent.change(input, { target: { value: 'Senior Go Engineer, remote' } });
+    fireEvent.change(input, {
+      target: { value: 'Senior Go Engineer, remote' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /find my roles/i }));
 
     // No fabricated titles — the failure is surfaced and the profile step opens
@@ -72,7 +80,9 @@ describe('OnboardingPage', () => {
       titles: ['Go Engineer'],
       intent: 'Go Engineer',
     });
-    const saveConfig = vi.spyOn(api, 'saveConfig').mockResolvedValue(emptyProfile());
+    const saveConfig = vi
+      .spyOn(api, 'saveConfig')
+      .mockResolvedValue(emptyProfile());
     const startRun = vi.spyOn(api, 'startRun').mockResolvedValue(undefined);
 
     renderPage();
@@ -214,23 +224,27 @@ describe('OnboardingPage', () => {
     });
     fireEvent.change(fileInput, { target: { files: [file] } });
 
-    expect(
-      await screen.findByText(/uploaded-resume\.pdf/),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/uploaded-resume\.pdf/)).toBeInTheDocument();
     expect(uploadResume).toHaveBeenCalledWith(file);
   });
 
   it('supports the just-exploring path without AI suggestions', async () => {
     vi.spyOn(api, 'getConfig').mockResolvedValue(emptyProfile());
-    const saveConfig = vi.spyOn(api, 'saveConfig').mockResolvedValue(emptyProfile());
+    const saveConfig = vi
+      .spyOn(api, 'saveConfig')
+      .mockResolvedValue(emptyProfile());
 
     renderPage();
 
     await screen.findByLabelText(/what job do you want/i);
     fireEvent.click(screen.getByRole('button', { name: /just exploring/i }));
 
-    expect(await screen.findByText(/does this look right/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /skip — go to the dashboard/i }));
+    expect(
+      await screen.findByText(/does this look right/i),
+    ).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('button', { name: /skip — go to the dashboard/i }),
+    );
 
     expect(
       await screen.findByText('DASH', undefined, { timeout: 3000 }),
