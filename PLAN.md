@@ -60,7 +60,7 @@
 - [x] Manual "Add a job" — `JobNewPage` at `/jobs/new` (role/company/url/location/remote → review queue) + `Add job` button on Jobs page. **Requires backend `POST /api/jobs`** (added locally in `../terminal-job` — needs committing there)
 - [x] Dismiss/archive action on queued rows — X button marks job `skipped` via backend `POST /api/jobs/{id}/dismiss` (added locally in `../terminal-job`)
 - [x] Approve + apply from job detail page — approve toggle + in-context consent apply on `JobDetailPage` (KAN-34)
-- [ ] Wizard completeness: optional resume + explicit consent on first run
+- [x] Wizard completeness: optional resume + explicit consent on first run (KAN-35)
 
 ### 🟠 Backend surface completion
 

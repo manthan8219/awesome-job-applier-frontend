@@ -253,4 +253,48 @@ describe('OnboardingPage', () => {
       expect.objectContaining({ jobIntent: 'exploring' }),
     );
   });
+
+  it('collects name, email, and apply consent into the saved profile', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(emptyProfile());
+    vi.spyOn(api, 'suggestJobTitles').mockResolvedValue({
+      titles: ['Go Engineer'],
+      intent: 'Go Engineer',
+    });
+    const saveConfig = vi
+      .spyOn(api, 'saveConfig')
+      .mockResolvedValue(emptyProfile());
+    vi.spyOn(api, 'startRun').mockResolvedValue(undefined);
+
+    renderPage();
+
+    const input = await screen.findByLabelText(/what job do you want/i);
+    fireEvent.change(input, { target: { value: 'Go Engineer' } });
+    fireEvent.click(screen.getByRole('button', { name: /find my roles/i }));
+
+    // The profile step now collects personal details + explicit consent.
+    const first = await screen.findByLabelText(/first name/i);
+    fireEvent.change(first, { target: { value: 'Ada' } });
+    fireEvent.change(screen.getByLabelText(/last name/i), {
+      target: { value: 'Lovelace' },
+    });
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'ada@example.com' },
+    });
+    fireEvent.click(
+      screen.getByRole('checkbox', { name: /i consent to nexus/i }),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /show me jobs/i }));
+
+    await waitFor(() => {
+      expect(saveConfig).toHaveBeenCalledWith(
+        expect.objectContaining({
+          firstName: 'Ada',
+          lastName: 'Lovelace',
+          email: 'ada@example.com',
+          applyConsent: true,
+        }),
+      );
+    });
+  });
 });
