@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
+  Check,
   CheckCircle2,
   Columns,
   ExternalLink,
@@ -78,7 +79,8 @@ function ScoreGauge({
 function BudgetChips({ budget }: { budget: ResumeSpaceBudget }) {
   const parts: string[] = [];
   if (budget.maxRoles) parts.push(`≤${budget.maxRoles} roles`);
-  if (budget.maxBulletsPerRole) parts.push(`≤${budget.maxBulletsPerRole} bullets`);
+  if (budget.maxBulletsPerRole)
+    parts.push(`≤${budget.maxBulletsPerRole} bullets`);
   if (budget.maxSkills) parts.push(`≤${budget.maxSkills} skills`);
   if (budget.maxEducation) parts.push(`≤${budget.maxEducation} edu`);
   if (parts.length === 0) return null;
@@ -116,8 +118,7 @@ function isImproveOutput(out: unknown): out is ImproveOutput {
 }
 
 function FitReport({ fit }: { fit: ResumeFit }) {
-  const pages =
-    fit.pages ?? Math.ceil(fit.estimatedPages ?? 1);
+  const pages = fit.pages ?? Math.ceil(fit.estimatedPages ?? 1);
   return (
     <Card className="space-y-3 p-5">
       <SectionHeading>Fit report</SectionHeading>
@@ -291,6 +292,17 @@ function ResultPanel({ out }: { out: ImproveOutput }) {
     </motion.div>
   );
 }
+function MetaChip({ children }: { children: string }) {
+  return (
+    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+      {children}
+    </span>
+  );
+}
+
+/** Templates the editor highlights as favorites in the gallery. */
+const TOP_PICK_IDS = new Set(['jake', 'awesome-cv', 'macchiato']);
+
 function TemplatePicker({
   templates,
   selected,
@@ -303,91 +315,120 @@ function TemplatePicker({
   canPreview: boolean;
 }) {
   return (
-    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-      {templates.map((t) => {
-        const on = selected === t.id;
-        return (
-          <div
-            key={t.id}
-            className={cn(
-              'overflow-hidden rounded-xl border transition-all',
-              on
-                ? 'border-neon-cyan/50 bg-neon-cyan/10 shadow-glow-soft'
-                : 'border-white/5 bg-ink-800/40 hover:border-white/15',
-            )}
-          >
-            <button
-              type="button"
-              aria-pressed={on}
-              onClick={() => onSelect(t.id)}
-              className="flex w-full flex-col gap-2 p-3 text-left"
+    <div>
+      <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">
+        {templates.length} templates · Choose your design
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {templates.map((t) => {
+          const on = selected === t.id;
+          const topPick = TOP_PICK_IDS.has(t.id);
+          return (
+            <div
+              key={t.id}
+              className={cn(
+                'group flex flex-col overflow-hidden rounded-xl border transition-all duration-200',
+                on
+                  ? 'bg-ink-800/70'
+                  : 'border-white/[0.08] bg-ink-800/50 hover:-translate-y-0.5 hover:border-white/20 hover:bg-ink-800/70 hover:shadow-lg',
+              )}
+              style={
+                on
+                  ? {
+                      borderColor: `${t.accentHex}99`,
+                      boxShadow: `0 0 0 2px ${t.accentHex}4d`,
+                    }
+                  : undefined
+              }
             >
-              <TemplatePreview template={t} />
-              <span className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-pressed={on}
+                onClick={() => onSelect(t.id)}
+                className="flex w-full flex-1 flex-col gap-2.5 p-2.5 text-left sm:p-3"
+              >
+                <div className="relative h-64 shrink-0 overflow-hidden rounded-lg">
+                  <TemplatePreview template={t} />
+                  {topPick && (
+                    <span className="absolute left-1.5 top-1.5 z-20 rounded bg-neon-cyan/90 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-ink-950">
+                      Top pick
+                    </span>
+                  )}
+                  {on && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute right-1.5 top-1.5 z-20 grid h-5 w-5 place-items-center rounded-full shadow-md"
+                      style={{ backgroundColor: t.accentHex }}
+                    >
+                      <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                    </span>
+                  )}
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-ink-950/60 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    <span
+                      className="rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white"
+                      style={{
+                        backgroundColor: on
+                          ? 'rgba(255,255,255,0.18)'
+                          : t.accentHex,
+                      }}
+                    >
+                      {on ? '✓ Selected' : 'Select'}
+                    </span>
+                  </div>
+                </div>
+                <span
+                  className="border-l-2 pl-2 text-sm font-semibold text-slate-100"
+                  style={{ borderColor: t.accentHex }}
+                >
+                  {t.name}
+                </span>
+                <span className="line-clamp-2 text-xs leading-snug text-slate-400">
+                  {t.description}
+                </span>
+                <span className="flex flex-wrap items-center gap-1.5">
+                  {t.layout === 'sidebar' ? (
+                    <Columns className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                  ) : (
+                    <FileText className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                  )}
+                  {t.onePage && <MetaChip>1 page</MetaChip>}
+                  {t.bodyFont === 'mono' && <MetaChip>mono</MetaChip>}
+                  {t.bodyFont === 'serif' && <MetaChip>serif</MetaChip>}
                   <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: t.accentHex }}
-                  />
-                  <span
-                    className={cn(
-                      'text-sm font-medium',
-                      on ? 'text-neon-cyan' : 'text-slate-200',
-                    )}
+                    title={t.atsNote}
+                    className="flex items-center gap-1 text-[10px] text-slate-500"
                   >
-                    {t.name}
+                    <ShieldCheck className="h-3 w-3 shrink-0" />
+                    ATS
                   </span>
                 </span>
-                <span className="flex items-center gap-1.5">
-                  {t.bodyFont === 'mono' ? (
-                    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
-                      mono
-                    </span>
-                  ) : t.bodyFont === 'serif' ? (
-                    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
-                      serif
-                    </span>
-                  ) : null}
-                  {t.layout === 'sidebar' ? (
-                    <Columns className="h-3.5 w-3.5" />
-                  ) : (
-                    <FileText className="h-3.5 w-3.5" />
-                  )}
-                  {t.onePage && (
-                    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
-                      1 page
-                    </span>
-                  )}
-                </span>
-              </span>
-              <span className="text-[11px] leading-snug text-slate-500">
-                {t.description}
-              </span>
-              {t.budget && <BudgetChips budget={t.budget} />}
-              <span className="flex items-center gap-1 text-[10px] text-slate-500">
-                <ShieldCheck className="h-3 w-3 shrink-0" />
-                {t.atsNote}
-              </span>
-              {t.source && (
-                <span className="truncate font-mono text-[9px] text-slate-600">
-                  ⤳ {t.source}
-                </span>
+                {t.budget && <BudgetChips budget={t.budget} />}
+                {t.source && (
+                  <span className="truncate font-mono text-[9px] text-slate-600">
+                    ⤳ {t.source}
+                  </span>
+                )}
+              </button>
+              {canPreview && (
+                <a
+                  href={api.templatePreviewUrl(t.id)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 border-t border-white/5 px-3 py-1.5 text-[10px] font-medium text-neon-cyan/80 transition-colors hover:bg-white/5 hover:text-neon-cyan"
+                >
+                  <ExternalLink className="h-3 w-3 shrink-0" />
+                  View sample PDF
+                </a>
               )}
-            </button>
-            {canPreview && (
-              <a
-                href={api.templatePreviewUrl(t.id)}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 border-t border-white/5 px-3 py-1.5 text-[10px] font-medium text-neon-cyan/80 transition-colors hover:bg-white/5 hover:text-neon-cyan"
-              >
-                <ExternalLink className="h-3 w-3 shrink-0" />
-                View sample PDF
-              </a>
-            )}
-          </div>
-        );
-      })}
+              <div
+                data-testid="template-accent-bar"
+                className="h-[3px] w-full shrink-0"
+                style={{ backgroundColor: t.accentHex }}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -548,7 +589,8 @@ export function ImproveTab() {
             <p className="max-w-md text-xs text-slate-500">
               Renders your current profile + {projectCount} project
               {projectCount === 1 ? '' : 's'} in{' '}
-              {templates.find((t) => t.id === templateId)?.name ?? 'the selected template'}{' '}
+              {templates.find((t) => t.id === templateId)?.name ??
+                'the selected template'}{' '}
               with the real PDF engine — no AI credits used.
             </p>
           </div>

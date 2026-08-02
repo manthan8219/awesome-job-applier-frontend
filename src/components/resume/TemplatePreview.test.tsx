@@ -23,21 +23,27 @@ describe('TemplatePreview', () => {
     const { container } = render(
       <TemplatePreview template={templateById('kendall')} />,
     );
-    const rail = container.querySelector('[data-testid="template-preview-rail"]');
+    const rail = container.querySelector(
+      '[data-testid="template-preview-rail"]',
+    );
     expect(rail).toBeTruthy();
     expect(rail?.textContent).toContain('Skills');
     expect(rail?.textContent).toContain('Go');
     expect(rail?.textContent).toContain('Education');
     expect(rail?.textContent).not.toContain('Experience');
     // Kendall's rail is a dark filled column.
-    expect((rail as HTMLElement)?.style.backgroundColor).toBe('rgb(17, 24, 39)');
+    expect((rail as HTMLElement)?.style.backgroundColor).toBe(
+      'rgb(17, 24, 39)',
+    );
   });
 
   it('uses the asymmetric column ratio for Deedy', () => {
     const { container } = render(
       <TemplatePreview template={templateById('deedy')} />,
     );
-    const rail = container.querySelector('[data-testid="template-preview-rail"]');
+    const rail = container.querySelector(
+      '[data-testid="template-preview-rail"]',
+    );
     expect(rail).toBeTruthy();
     // Deedy's rail is ~24% of the width (columnRatio 0.76).
     expect((rail as HTMLElement)?.style.width).toBe('24%');
@@ -47,7 +53,9 @@ describe('TemplatePreview', () => {
     const { container } = render(
       <TemplatePreview template={templateById('macchiato')} />,
     );
-    const rail = container.querySelector('[data-testid="template-preview-rail"]');
+    const rail = container.querySelector(
+      '[data-testid="template-preview-rail"]',
+    );
     expect((rail as HTMLElement)?.style.backgroundColor).toBe(
       'rgb(15, 118, 110)',
     );
@@ -70,5 +78,81 @@ describe('TemplatePreview', () => {
     const preview = container.querySelector('[data-testid="template-preview"]');
     expect(preview?.className).toContain('font-serif');
   });
-});
 
+  it('renders the sidebar rail for every two-column template', () => {
+    for (const id of ['deedy', 'kendall', 'macchiato']) {
+      const { container } = render(
+        <TemplatePreview template={templateById(id)} />,
+      );
+      expect(
+        container.querySelector('[data-testid="template-preview-rail"]'),
+      ).toBeTruthy();
+    }
+  });
+
+  it('does not render a rail for single-column templates', () => {
+    for (const id of [
+      'jake',
+      'awesome-cv',
+      'mcdowell',
+      'billryan',
+      'banking',
+    ]) {
+      const { container } = render(
+        <TemplatePreview template={templateById(id)} />,
+      );
+      expect(
+        container.querySelector('[data-testid="template-preview-rail"]'),
+      ).toBeNull();
+    }
+  });
+
+  it('keeps the rail dark for railBackground "dark" (Kendall)', () => {
+    const { container } = render(
+      <TemplatePreview template={templateById('kendall')} />,
+    );
+    const rail = container.querySelector(
+      '[data-testid="template-preview-rail"]',
+    );
+    expect((rail as HTMLElement)?.style.backgroundColor).toBe(
+      'rgb(17, 24, 39)',
+    );
+  });
+
+  it('fills the rail with the accent for railBackground "accent" (Macchiato)', () => {
+    const { container } = render(
+      <TemplatePreview template={templateById('macchiato')} />,
+    );
+    const rail = container.querySelector(
+      '[data-testid="template-preview-rail"]',
+    );
+    expect((rail as HTMLElement)?.style.backgroundColor).toBe(
+      'rgb(15, 118, 110)',
+    );
+  });
+
+  it('centers the header block for the Banking template', () => {
+    const { container } = render(
+      <TemplatePreview template={templateById('banking')} />,
+    );
+    const header = container.querySelector(
+      '[data-testid="template-preview-header"]',
+    );
+    expect(header).toBeTruthy();
+    expect(header?.className).toContain('items-center');
+    expect(header?.className).toContain('text-center');
+  });
+
+  it('renders a filled accent marker before headings for Awesome-CV', () => {
+    const { container } = render(
+      <TemplatePreview template={templateById('awesome-cv')} />,
+    );
+    const markers = container.querySelectorAll(
+      '[data-testid="section-marker"]',
+    );
+    const first = markers[0] as HTMLElement | undefined;
+    expect(first).toBeTruthy();
+    // Filled with the template accent (#00539b), not a hollow outline.
+    expect(first?.style.backgroundColor).toBe('rgb(0, 83, 155)');
+  });
+});
