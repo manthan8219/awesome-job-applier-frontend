@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ImproveTab } from './ImproveTab';
@@ -19,7 +25,11 @@ const project: WorkProject = {
 const validOutput: ImproveOutput = {
   previewMD: '# Ada Lovelace\n\n## Summary\nShipped 3 payment systems.',
   dir: '~/.nexus/resumes/ada-senior-backend',
-  review: { summary: 'Strong resume with clear impact metrics', atsScore: 87, qualityScore: 82 },
+  review: {
+    summary: 'Strong resume with clear impact metrics',
+    atsScore: 87,
+    qualityScore: 82,
+  },
 };
 
 function makeClient() {
@@ -39,7 +49,9 @@ function mockTemplates() {
 }
 
 async function enableAndClickGenerate() {
-  const button = await screen.findByRole('button', { name: /generate resume/i });
+  const button = await screen.findByRole('button', {
+    name: /generate resume/i,
+  });
   await waitFor(() => expect(button).toBeEnabled());
   fireEvent.click(button);
 }
@@ -248,7 +260,9 @@ describe('ImproveTab', () => {
       makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
     );
     vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
-    const improve = vi.spyOn(api, 'improveResume').mockResolvedValue(validOutput);
+    const improve = vi
+      .spyOn(api, 'improveResume')
+      .mockResolvedValue(validOutput);
     mockTemplates();
 
     renderTab();
@@ -265,10 +279,9 @@ describe('ImproveTab', () => {
       'Macchiato',
       'Banking',
     ]) {
-      expect(screen.getByRole('button', { name: new RegExp(name, 'i') })).toHaveAttribute(
-        'aria-pressed',
-        'false',
-      );
+      expect(
+        screen.getByRole('button', { name: new RegExp(name, 'i') }),
+      ).toHaveAttribute('aria-pressed', 'false');
     }
 
     // Picking Deedy flips the selection and is passed to the backend.
@@ -304,9 +317,7 @@ describe('ImproveTab', () => {
 
     await enableAndClickGenerate();
 
-    expect(
-      await screen.findByText(/incomplete response/i),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/incomplete response/i)).toBeInTheDocument();
     expect(screen.queryByText(/assessor verdict/i)).not.toBeInTheDocument();
   });
 
@@ -319,9 +330,80 @@ describe('ImproveTab', () => {
 
     renderTab();
 
-    const button = await screen.findByRole('button', { name: /generate resume/i });
+    const button = await screen.findByRole('button', {
+      name: /generate resume/i,
+    });
     expect(button).toBeDisabled();
     expect(screen.getByText(/ai assist on/i)).toBeInTheDocument();
     expect(screen.getByText(/resume path set in config/i)).toBeInTheDocument();
+  });
+
+  it('renders all 8 template cards with an accent bar under each', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
+    );
+    vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
+    vi.spyOn(api, 'improveResume').mockResolvedValue(validOutput);
+    mockTemplates();
+
+    renderTab();
+
+    expect(
+      await screen.findAllByRole('button', { name: /template preview/i }),
+    ).toHaveLength(8);
+    expect(screen.getAllByTestId('template-accent-bar')).toHaveLength(8);
+  });
+
+  it('marks jake, awesome-cv, and macchiato with a TOP PICK badge', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
+    );
+    vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
+    vi.spyOn(api, 'improveResume').mockResolvedValue(validOutput);
+    mockTemplates();
+
+    renderTab();
+
+    expect(await screen.findAllByText(/top pick/i)).toHaveLength(3);
+    for (const id of ['jake', 'awesome-cv', 'macchiato']) {
+      const card = screen.getByRole('button', {
+        name: new RegExp(`^${id}`, 'i'),
+      });
+      expect(within(card).getByText(/top pick/i)).toBeInTheDocument();
+    }
+    const deedy = screen.getByRole('button', { name: /deedy/i });
+    expect(within(deedy).queryByText(/top pick/i)).toBeNull();
+  });
+
+  it('selects a clicked card and passes the template id to the backend', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
+    );
+    vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
+    const improve = vi
+      .spyOn(api, 'improveResume')
+      .mockResolvedValue(validOutput);
+    mockTemplates();
+
+    renderTab();
+
+    const banking = await screen.findByRole('button', { name: /^banking/i });
+    expect(banking).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(banking);
+    expect(screen.getByRole('button', { name: /^banking/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: /^jake/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+
+    await enableAndClickGenerate();
+    await waitFor(() =>
+      expect(improve).toHaveBeenCalledWith(
+        expect.objectContaining({ templateId: 'banking' }),
+      ),
+    );
   });
 });

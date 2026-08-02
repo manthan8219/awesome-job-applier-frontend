@@ -10,10 +10,18 @@ import type { ResumeTemplate } from '@/types/resume';
 export const SAMPLE_RESUME_PREVIEW = {
   name: 'Maya Okonkwo',
   headline: 'Senior Product Engineer',
-  contact: 'maya@okonkwo.dev · San Francisco, CA',
+  contact: 'maya@okonkwo.dev · SF, CA',
   summary:
     'Product engineer with 8+ years building high-scale web platforms. Led a five-person team shipping a payments platform used by 2M customers.',
-  skills: ['Go', 'TypeScript', 'React', 'PostgreSQL', 'Kubernetes', 'gRPC', 'CI/CD'],
+  skills: [
+    'Go',
+    'TypeScript',
+    'React',
+    'PostgreSQL',
+    'Kubernetes',
+    'gRPC',
+    'CI/CD',
+  ],
   experience: [
     {
       title: 'Senior Product Engineer',
@@ -51,37 +59,44 @@ function SectionHeading({
   sectionStyle?: string;
   onDark?: boolean;
 }) {
-  const headColor = sectionStyle === 'soft' ? '#94a3b8' : accentHex;
-  const textColor = onDark ? '#ffffff' : headColor;
-  const ruleCls = onDark ? 'bg-white/25' : 'bg-ink-950/20';
-  const common =
-    'text-[4.5px] font-bold uppercase leading-none tracking-[0.08em]';
+  // Each sectionStyle has its own silhouette so templates are distinguishable
+  // at thumbnail scale: caps has no rule, marker adds a filled square + rule,
+  // ruleAbove draws a thick rule over the text, soft is a quiet gray label,
+  // and plain pairs the heading with a thin accent rule.
+  const textColor = onDark
+    ? '#ffffff'
+    : sectionStyle === 'soft'
+      ? '#94a3b8'
+      : accentHex;
+  const ruleColor = onDark ? 'rgba(255,255,255,0.4)' : accentHex;
+  const base = 'text-[5px] font-bold uppercase leading-none tracking-[0.14em]';
   if (sectionStyle === 'marker') {
     return (
-      <div className="mb-[2px] flex flex-col gap-[1px]">
-        <div className="flex items-center gap-[2px]">
+      <div className="mb-[2px] flex flex-col gap-[2px]">
+        <div className="flex items-center gap-[2.5px]">
           <span
-            className="h-[3px] w-[3px] shrink-0"
+            data-testid="section-marker"
+            className="h-[4px] w-[4px] shrink-0 rounded-[1px]"
             style={{ backgroundColor: onDark ? '#ffffff' : accentHex }}
           />
-          <p className={common} style={{ color: textColor }}>
+          <p className={base} style={{ color: textColor }}>
             {label}
           </p>
         </div>
-        <div className={cn('h-px w-full', ruleCls)} />
+        <div className="h-px w-full" style={{ backgroundColor: ruleColor }} />
       </div>
     );
   }
   if (sectionStyle === 'ruleAbove') {
     return (
-      <div className="mb-[2px] flex flex-col gap-[1px]">
+      <div className="mb-[2px] flex flex-col gap-[2px]">
         <div
-          className="h-px w-full"
+          className="h-[2px] w-full"
           style={{
-            backgroundColor: onDark ? 'rgba(255,255,255,0.4)' : accentHex,
+            backgroundColor: onDark ? 'rgba(255,255,255,0.5)' : accentHex,
           }}
         />
-        <p className={common} style={{ color: textColor }}>
+        <p className={base} style={{ color: textColor }}>
           {label}
         </p>
       </div>
@@ -90,7 +105,7 @@ function SectionHeading({
   if (sectionStyle === 'soft') {
     return (
       <div className="mb-[2px]">
-        <p className="text-[4.5px] font-semibold leading-none" style={{ color: '#94a3b8' }}>
+        <p className="text-[5px] font-semibold leading-none text-slate-400">
           {label}
         </p>
       </div>
@@ -99,19 +114,22 @@ function SectionHeading({
   if (sectionStyle === 'caps') {
     return (
       <div className="mb-[2px]">
-        <p className={common} style={{ color: textColor }}>
+        <p
+          className={cn(base, 'tracking-[0.22em]')}
+          style={{ color: textColor }}
+        >
           {label}
         </p>
       </div>
     );
   }
-  // plain: uppercase heading + thin rule below
+  // plain: uppercase heading + thin accent rule below
   return (
-    <div className="mb-[2px] flex flex-col gap-[1px]">
-      <p className={common} style={{ color: textColor }}>
+    <div className="mb-[2px] flex flex-col gap-[2px]">
+      <p className={base} style={{ color: textColor }}>
         {label}
       </p>
-      <div className={cn('h-px w-full', ruleCls)} />
+      <div className="h-px w-full" style={{ backgroundColor: ruleColor }} />
     </div>
   );
 }
@@ -157,7 +175,10 @@ function SectionContent({
               {role.bullets.slice(0, 2).map((bullet) => (
                 <p
                   key={bullet}
-                  className={cn('flex gap-[2px] text-[4px] leading-[1.3]', body)}
+                  className={cn(
+                    'flex gap-[2px] text-[4px] leading-[1.3]',
+                    body,
+                  )}
                 >
                   <span className="text-[3px]" style={{ color: bulletColor }}>
                     •
@@ -183,7 +204,6 @@ function SectionContent({
       return null;
   }
 }
-
 
 /**
  * A miniature, A4-proportioned sample resume drawn from the template manifest.
@@ -222,7 +242,12 @@ export function TemplatePreview({ template }: { template: ResumeTemplate }) {
     ? 'items-center text-center'
     : 'items-start text-left';
   const nameColor = nameStyle === 'colored' ? accentHex : undefined;
-  const railDark = railBackground === 'dark';
+  // The Deedy family marks its rail with a near-black accent and no explicit
+  // fill — treat any #111827 sidebar rail as the "dark" fill so the narrow
+  // left rail reads dramatic instead of a faint gray tint.
+  const railDark =
+    railBackground === 'dark' ||
+    (isSidebar && !railBackground && accentHex.toLowerCase() === '#111827');
   const railAccent = railBackground === 'accent';
   const railOnDark = railDark || railAccent;
   const railBg =
@@ -234,27 +259,33 @@ export function TemplatePreview({ template }: { template: ResumeTemplate }) {
   const railWidth = columnRatio
     ? `${Math.round((1 - columnRatio) * 100)}%`
     : '38%';
+  // nameStyle 'centered' (moderncv banking) always draws a rule under the
+  // header block to anchor the centered name + contact line.
+  const showHeaderRule = showRule !== false || nameStyle === 'centered';
 
   const header = (
-    <header className={cn('flex flex-col gap-[2px]', headerAlignCls)}>
+    <header
+      data-testid="template-preview-header"
+      className={cn('flex flex-col gap-[2px]', headerAlignCls)}
+    >
       <p
-        className="text-[11px] font-bold leading-none tracking-wide"
+        className="text-[13px] font-bold leading-none tracking-wide"
         style={nameColor ? { color: nameColor } : undefined}
       >
         {SAMPLE_RESUME_PREVIEW.name}
       </p>
       <p
-        className="text-[5.5px] font-semibold leading-none"
+        className="text-[6px] font-semibold leading-none"
         style={{ color: accentHex }}
       >
         {SAMPLE_RESUME_PREVIEW.headline}
       </p>
       {contactLine && (
-        <p className="text-[3.5px] leading-none text-ink-950/60">
+        <p className="text-[4px] leading-none text-ink-950/60">
           {SAMPLE_RESUME_PREVIEW.contact}
         </p>
       )}
-      {showRule !== false && (
+      {showHeaderRule && (
         <div
           className="mt-[2px] h-px w-full"
           style={{ backgroundColor: accentHex }}
@@ -292,9 +323,10 @@ export function TemplatePreview({ template }: { template: ResumeTemplate }) {
       data-testid="template-preview"
       aria-label={`${template.name} template preview`}
       className={cn(
-        'aspect-[210/297] w-full overflow-hidden rounded-md border border-white/10 bg-[#fbfaf8] text-ink-950 shadow-inner',
+        'aspect-[210/297] w-full overflow-hidden rounded-md border border-white/10 bg-[#fbfaf8] text-ink-950',
         fontCls,
       )}
+      style={{ boxShadow: `inset 0 0 18px ${accentHex}33` }}
     >
       <div
         className={cn(
@@ -323,4 +355,3 @@ export function TemplatePreview({ template }: { template: ResumeTemplate }) {
     </div>
   );
 }
-
