@@ -497,6 +497,10 @@ describe.skipIf(!backendAvailable)(
         expect(jake?.sections.length).toBeGreaterThan(0);
         expect(jake?.accentHex).toMatch(/^#/);
         expect(jake?.source).toBeTruthy();
+        // The backend ships the real LaTeX (sample persona) so the web UI can
+        // render a faithful live preview with a client-side LaTeX engine.
+        expect(jake?.latex).toContain('\\documentclass');
+        expect(jake?.latex).toContain('Maya Okonkwo');
 
         // Real-design tokens distinguish the curated templates.
         expect(jake?.sectionStyle).toBe('caps');

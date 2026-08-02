@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SectionHeading } from './SectionHeading';
 import { TemplatePreview } from './TemplatePreview';
+import { LatexPreview } from './LatexPreview';
 import { useImproveResume } from '@/hooks/useImproveResume';
 import { useConfig } from '@/hooks/useConfig';
 import { useResumeAnalysis } from '@/hooks/useResumeAnalysis';
@@ -574,6 +575,17 @@ export function ImproveTab() {
           onSelect={setTemplateId}
           canPreview={templatesFromApi}
         />
+        {(() => {
+          const selected = templates.find((t) => t.id === templateId);
+          return selected?.latex ? (
+            <div className="border-t border-white/5 pt-4">
+              <p className="mb-2 text-[10px] uppercase tracking-wider text-slate-500">
+                Live LaTeX preview (sample persona)
+              </p>
+              <LatexPreview latex={selected.latex} />
+            </div>
+          ) : null;
+        })()}
         <div className="flex flex-col gap-2 border-t border-white/5 pt-4">
           <div className="flex flex-wrap items-center gap-3">
             <Button

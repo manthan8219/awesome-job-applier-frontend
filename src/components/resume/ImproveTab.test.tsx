@@ -11,7 +11,25 @@ import { ImproveTab } from './ImproveTab';
 import { api } from '@/lib/api';
 import { makeConfig } from '@/test/fixtures';
 import { RESUME_TEMPLATES } from '@/types/resume';
-import type { ImproveOutput, WorkProject } from '@/types/resume';
+import type {
+  ImproveOutput,
+  ResumeTemplate,
+  WorkProject,
+} from '@/types/resume';
+
+// The live LaTeX pane renders via latex.js — stub it so the suite stays fast
+// and deterministic while still exercising the wiring.
+vi.mock('@/lib/latexPreview', () => ({
+  extractDocumentBody: (tex: string) => tex,
+  normalizeLatexFragment: (body: string) => body,
+  renderLatexPreview: vi.fn(() => {
+    const frag = document.createDocumentFragment();
+    const p = document.createElement('p');
+    p.textContent = 'Maya Okonkwo — live LaTeX'; // content the real latex.js renders
+    frag.appendChild(p);
+    return frag;
+  }),
+}));
 
 const project: WorkProject = {
   id: 'p1',
@@ -405,5 +423,37 @@ describe('ImproveTab', () => {
         expect.objectContaining({ templateId: 'banking' }),
       ),
     );
+  });
+
+  it('renders a live LaTeX preview when the backend ships the real source', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({ aiAssist: true, resumePath: '~/.nexus/resumes/ada.pdf' }),
+    );
+    vi.spyOn(api, 'getResumeProjects').mockResolvedValue([project]);
+    const base = RESUME_TEMPLATES.find((t) => t.id === 'jake');
+    const jakeWithLatex: ResumeTemplate = base
+      ? {
+          ...base,
+          latex:
+            '\\documentclass{article}\\n\\begin{document}{\\Large\\textbf{Maya Okonkwo}}\\end{document}',
+        }
+      : {
+          id: 'jake',
+          name: 'Jake',
+          description: '',
+          layout: 'single',
+          sections: [],
+          accentHex: '#334155',
+          onePage: false,
+          atsNote: '',
+          contactLine: false,
+          showRule: false,
+        };
+    vi.spyOn(api, 'getResumeTemplates').mockResolvedValue([jakeWithLatex]);
+
+    renderTab();
+
+    expect(await screen.findByText(/live latex preview/i)).toBeInTheDocument();
+    expect(screen.getByText(/Maya Okonkwo — live LaTeX/)).toBeInTheDocument();
   });
 });
