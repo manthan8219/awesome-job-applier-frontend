@@ -925,6 +925,48 @@ export default function ConfigPage() {
                   onChange={(v) => patch({ openAIKey: v })}
                   placeholder="sk-..."
                 />
+                <TextField
+                  label="Google API Key"
+                  value={f.googleKey ?? ''}
+                  onChange={(v) => patch({ googleKey: v })}
+                  placeholder="AIza..."
+                />
+                <TextField
+                  label="DeepSeek API Key"
+                  value={f.deepSeekKey ?? ''}
+                  onChange={(v) => patch({ deepSeekKey: v })}
+                  placeholder="sk-..."
+                />
+                <TextField
+                  label="Groq API Key"
+                  value={f.groqKey ?? ''}
+                  onChange={(v) => patch({ groqKey: v })}
+                  placeholder="gsk_..."
+                />
+                <TextField
+                  label="Mistral API Key"
+                  value={f.mistralKey ?? ''}
+                  onChange={(v) => patch({ mistralKey: v })}
+                  placeholder="..."
+                />
+                <TextField
+                  label="Together AI API Key"
+                  value={f.togetherKey ?? ''}
+                  onChange={(v) => patch({ togetherKey: v })}
+                  placeholder="..."
+                />
+                <TextField
+                  label="OpenRouter API Key"
+                  value={f.openRouterKey ?? ''}
+                  onChange={(v) => patch({ openRouterKey: v })}
+                  placeholder="sk-or-..."
+                />
+                <TextField
+                  label="xAI API Key"
+                  value={f.xaiKey ?? ''}
+                  onChange={(v) => patch({ xaiKey: v })}
+                  placeholder="xai-..."
+                />
               </div>
             )}
           </>

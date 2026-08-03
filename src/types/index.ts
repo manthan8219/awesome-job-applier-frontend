@@ -99,6 +99,13 @@ export interface NexusConfig {
   aiProvider: string;
   anthropicKey?: string;
   openAIKey?: string;
+  googleKey?: string;
+  deepSeekKey?: string;
+  groqKey?: string;
+  mistralKey?: string;
+  togetherKey?: string;
+  openRouterKey?: string;
+  xaiKey?: string;
   localLLMURL?: string;
   localLLMModel?: string;
   // Apply safety

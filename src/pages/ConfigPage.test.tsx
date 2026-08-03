@@ -130,6 +130,39 @@ describe('ConfigPage', () => {
     );
   });
 
+  it('renders and persists every OpenAI-compatible API key field', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(
+      makeConfig({ aiAssist: true, aiProvider: 'api' }),
+    );
+    const saveConfig = vi
+      .spyOn(api, 'saveConfig')
+      .mockResolvedValue(makeConfig({ aiAssist: true, aiProvider: 'api' }));
+
+    renderPage();
+
+    // All provider keys render when AI Assist is on with API backend.
+    const google = await screen.findByLabelText(/google api key/i);
+    expect(google.tagName).toBe('INPUT');
+    for (const label of [
+      /deepseek api key/i,
+      /groq api key/i,
+      /mistral api key/i,
+      /together ai api key/i,
+      /openrouter api key/i,
+      /xai api key/i,
+    ]) {
+      expect(screen.getByLabelText(label).tagName).toBe('INPUT');
+    }
+
+    // A Google key edit round-trips through the save payload.
+    fireEvent.change(google, { target: { value: 'AIza-test' } });
+    await waitFor(() =>
+      expect(saveConfig).toHaveBeenCalledWith(
+        expect.objectContaining({ googleKey: 'AIza-test' }),
+      ),
+    );
+  });
+
   it('saves on the Save now button and shows the success indicator', async () => {
     vi.spyOn(api, 'getConfig').mockResolvedValue(makeConfig());
     const saveConfig = vi
