@@ -1,7 +1,7 @@
 // @vitest-environment node
 /**
  * Contract tests — every method in `src/lib/api.ts` against the REAL Nexus Go
- * backend (`../terminal-job`, started with `nexus --api`).
+ * backend (`../nexus-job-assistant`, started with `nexus --api`).
  *
  * In beforeAll the backend is built, seeded with fixture applications (via
  * `cmd/e2e-seed`), and started with an isolated $HOME on a random port, so the
@@ -11,7 +11,14 @@
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, openSync, rmSync } from 'node:fs';
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  openSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,7 +26,10 @@ import type { api as ApiModule } from '@/lib/api';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '../..');
-const backendRoot = path.resolve(repoRoot, '../terminal-job');
+const backendRoot = path.resolve(repoRoot, '../nexus-job-assistant');
+
+/** Go appends .exe to -o outputs on Windows; the loader needs the extension. */
+const exe = process.platform === 'win32' ? '.exe' : '';
 
 const goAvailable = (() => {
   try {
@@ -37,6 +47,7 @@ const backendAvailable =
 let api: typeof ApiModule;
 let child: ChildProcess | undefined;
 let workDir = '';
+let logFd: number | undefined;
 
 async function waitForHealth(url: string, timeoutMs = 30_000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
@@ -62,35 +73,45 @@ async function buildAndStart(): Promise<string> {
   mkdirSync(homeDir, { recursive: true });
 
   // 1. Build the backend and the seed helper.
-  execFileSync('go', ['build', '-o', path.join(binDir, 'nexus'), '.'], {
+  execFileSync('go', ['build', '-o', path.join(binDir, 'nexus' + exe), '.'], {
     cwd: backendRoot,
     stdio: 'pipe',
   });
   execFileSync(
     'go',
-    ['build', '-o', path.join(binDir, 'e2e-seed'), './cmd/e2e-seed'],
+    ['build', '-o', path.join(binDir, 'e2e-seed' + exe), './cmd/e2e-seed'],
     { cwd: backendRoot, stdio: 'pipe' },
   );
 
   // 2. Seed deterministic fixture applications into the isolated store.
   execFileSync(
-    path.join(binDir, 'e2e-seed'),
+    path.join(binDir, 'e2e-seed' + exe),
     ['-db', path.join(homeDir, '.nexus', 'applications.db')],
     {
       cwd: backendRoot,
-      env: { ...process.env, HOME: homeDir },
+      // NEXUS_HOME pins the store to the isolated temp dir on every platform
+      // (Windows ignores $HOME — Go's os.UserHomeDir reads USERPROFILE).
+      env: {
+        ...process.env,
+        HOME: homeDir,
+        NEXUS_HOME: path.join(homeDir, '.nexus'),
+      },
     },
   );
 
   // 3. Start the API server with an isolated HOME on a random port.
   const port = 21000 + Math.floor(Math.random() * 4000);
-  const logFd = openSync(path.join(workDir, 'nexus.log'), 'w');
+  logFd = openSync(path.join(workDir, 'nexus.log'), 'w');
   child = spawn(
-    path.join(binDir, 'nexus'),
+    path.join(binDir, 'nexus' + exe),
     ['--api', '--api-port', String(port)],
     {
       cwd: backendRoot,
-      env: { ...process.env, HOME: homeDir },
+      env: {
+        ...process.env,
+        HOME: homeDir,
+        NEXUS_HOME: path.join(homeDir, '.nexus'),
+      },
       stdio: ['ignore', logFd, logFd],
     },
   );
@@ -112,11 +133,43 @@ describe.skipIf(!backendAvailable)(
       api = mod.api;
     }, 180_000);
 
-    afterAll(() => {
+    afterAll(async () => {
       vi.unstubAllEnvs();
       vi.resetModules();
-      if (child && !child.killed) child.kill('SIGTERM');
-      if (workDir) rmSync(workDir, { recursive: true, force: true });
+      // Close our handle first or Windows refuses to delete the dir.
+      if (logFd !== undefined) {
+        try {
+          closeSync(logFd);
+        } catch {
+          // already closed
+        }
+        logFd = undefined;
+      }
+      if (child) {
+        if (child.exitCode === null && child.signalCode === null) {
+          child.kill('SIGTERM');
+          await new Promise<void>((resolve) => {
+            const t = setTimeout(resolve, 2000);
+            child!.once('exit', () => {
+              clearTimeout(t);
+              resolve();
+            });
+          });
+        }
+        child = undefined;
+      }
+      if (workDir) {
+        // The server may hold files briefly after exit — retry before failing.
+        for (let i = 0; i < 5; i++) {
+          try {
+            rmSync(workDir, { recursive: true, force: true });
+            workDir = '';
+            break;
+          } catch {
+            await new Promise((r) => setTimeout(r, 300));
+          }
+        }
+      }
     });
 
     it('is configured (backend repo + go toolchain present)', () => {
@@ -410,9 +463,11 @@ describe.skipIf(!backendAvailable)(
         const emailItem = items.find((i) => i.channel === 'email');
         expect(emailItem).toBeTruthy();
         // No Gmail app password / OAuth in the test env → real send must 400.
-        await expect(api.sendOutreachItem(emailItem!.id)).rejects.toMatchObject({
-          status: 400,
-        });
+        await expect(api.sendOutreachItem(emailItem!.id)).rejects.toMatchObject(
+          {
+            status: 400,
+          },
+        );
       });
 
       it('sendOutreachItem for a missing id returns 404', async () => {
@@ -442,6 +497,10 @@ describe.skipIf(!backendAvailable)(
         expect(jake?.sections.length).toBeGreaterThan(0);
         expect(jake?.accentHex).toMatch(/^#/);
         expect(jake?.source).toBeTruthy();
+        // The backend ships the real LaTeX (sample persona) so the web UI can
+        // render a faithful live preview with a client-side LaTeX engine.
+        expect(jake?.latex).toContain('\\documentclass');
+        expect(jake?.latex).toContain('Maya Okonkwo');
 
         // Real-design tokens distinguish the curated templates.
         expect(jake?.sectionStyle).toBe('caps');
@@ -473,8 +532,14 @@ describe.skipIf(!backendAvailable)(
         }
         const ids = templates.map((t) => t.id);
         for (const id of [
-          'jake', 'awesome-cv', 'deedy', 'mcdowell',
-          'billryan', 'kendall', 'macchiato', 'banking',
+          'jake',
+          'awesome-cv',
+          'deedy',
+          'mcdowell',
+          'billryan',
+          'kendall',
+          'macchiato',
+          'banking',
         ]) {
           expect(ids).toContain(id);
         }
@@ -524,7 +589,10 @@ describe.skipIf(!backendAvailable)(
         // The contract backend has AI Assist off — the real handler must
         // reject cleanly instead of returning the old fake stub shape.
         await expect(
-          api.improveResume({ targetRole: 'Cardiologist', formats: ['markdown'] }),
+          api.improveResume({
+            targetRole: 'Cardiologist',
+            formats: ['markdown'],
+          }),
         ).rejects.toMatchObject({ status: 400 });
       });
 

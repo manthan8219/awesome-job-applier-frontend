@@ -156,6 +156,8 @@ export interface ResumeTemplate {
   id: string;
   name: string;
   description: string;
+  /** Real LaTeX source rendered with the sample persona (live preview). */
+  latex?: string;
   layout: ResumeTemplateLayout;
   sections: ResumeTemplateSection[];
   accentHex: string;
@@ -364,7 +366,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       charsPerLine: 60,
     },
     source: 'jsonresume.org — Kendall (MIT)',
-    atsNote: 'Two columns can confuse some ATS systems; use for design-forward roles.',
+    atsNote:
+      'Two columns can confuse some ATS systems; use for design-forward roles.',
   },
   {
     id: 'macchiato',
@@ -396,7 +399,8 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
       charsPerLine: 60,
     },
     source: 'jsonresume.org — Macchiato (MIT)',
-    atsNote: 'Two columns can confuse some ATS systems; use for design-forward roles.',
+    atsNote:
+      'Two columns can confuse some ATS systems; use for design-forward roles.',
   },
   {
     id: 'banking',
