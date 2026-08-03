@@ -1,6 +1,17 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from 'react';
+import {
+  Check,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Circle,
   Loader2,
   Save,
@@ -19,6 +30,7 @@ import { api } from '@/lib/api';
 import { backfilledLabels, contactPatch } from '@/lib/resume-backfill';
 import { useConfig } from '@/hooks/useConfig';
 import { useUpdateConfig } from '@/hooks/useUpdateConfig';
+import { useAIModels } from '@/hooks/useAIModels';
 import { cn } from '@/lib/utils';
 import type { NexusConfig } from '@/types';
 
@@ -380,6 +392,186 @@ function ModelPicker({
         onChange={onChange}
         placeholder="llama3.2:latest"
       />
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  API Provider Model Picker — live from the provider's /models endpoint     */
+/* -------------------------------------------------------------------------- */
+function ApiModelPicker({
+  provider,
+  label,
+  apiKey,
+  value,
+  onChange,
+}: {
+  provider: string;
+  label: string;
+  apiKey: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const inputId = `ai-models-${provider}`;
+  const { data, isLoading, error } = useAIModels(provider, apiKey);
+  const models = data?.models ?? [];
+  const errMsg = error instanceof Error ? error.message : String(error ?? '');
+
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [highlight, setHighlight] = useState(0);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // When closed, the trigger always shows the committed value; the filter
+  // query only applies while the panel is open.
+  const shown = open ? query : value;
+  const filtered = models.filter((m) =>
+    m.toLowerCase().includes(query.trim().toLowerCase()),
+  );
+
+  // Reflect external value changes (config load, clears) into the query.
+  useEffect(() => {
+    if (!open) setQuery(value);
+  }, [value, open]);
+
+  // Close when clicking/tapping outside the control.
+  useEffect(() => {
+    if (!open) return;
+    function onDocClick(e: MouseEvent) {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [open]);
+
+  function select(m: string) {
+    onChange(m);
+    setOpen(false);
+    setQuery(m);
+  }
+
+  function handleKey(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Escape') {
+      setOpen(false);
+      return;
+    }
+    if (!open) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlight((h) => Math.min(h + 1, Math.max(filtered.length - 1, 0)));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlight((h) => Math.max(h - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const pick = filtered[highlight];
+      if (pick) select(pick);
+    }
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <label
+        htmlFor={inputId}
+        className="block text-xs font-medium uppercase tracking-wider text-slate-500"
+      >
+        {label}
+      </label>
+
+      {!apiKey.trim() ? (
+        <div className="rounded-xl border border-white/5 bg-ink-950/60 px-3.5 py-2.5 text-sm text-slate-600">
+          Enter the API key above to load its models
+        </div>
+      ) : (
+        <div ref={rootRef} className="relative">
+          <input
+            id={inputId}
+            role="combobox"
+            aria-expanded={open}
+            aria-haspopup="listbox"
+            aria-autocomplete="list"
+            disabled={isLoading}
+            value={shown}
+            onFocus={() => {
+              setOpen(true);
+              setHighlight(0);
+            }}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+              setHighlight(0);
+            }}
+            onKeyDown={handleKey}
+            placeholder={
+              isLoading
+                ? 'Loading models…'
+                : models[0]
+                  ? `e.g. ${models[0]}`
+                  : 'type a model name…'
+            }
+            className={cn(inputCls, 'pr-9')}
+          />
+          {!isLoading && (
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label={`${label} options`}
+              onClick={() => setOpen((o) => !o)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-500 transition-colors hover:text-slate-300"
+            >
+              {open ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
+          )}
+
+          {open && !isLoading && (
+            <div
+              role="listbox"
+              aria-label={label}
+              className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-white/10 bg-ink-900/95 p-1 shadow-2xl backdrop-blur"
+            >
+              {error ? (
+                <div className="px-3 py-2 text-xs text-red-400">
+                  Couldn't load models: {errMsg}
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="px-3 py-2 text-xs text-slate-500">
+                  {models.length === 0
+                    ? 'No models returned for this key.'
+                    : `No models match “${query}”. Press Enter to use it as a custom model.`}
+                </div>
+              ) : (
+                filtered.map((m, i) => (
+                  <button
+                    key={m}
+                    type="button"
+                    role="option"
+                    aria-selected={value === m}
+                    onClick={() => select(m)}
+                    onMouseEnter={() => setHighlight(i)}
+                    className={cn(
+                      'flex w-full items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-left text-xs transition-colors',
+                      i === highlight
+                        ? 'bg-neon-cyan/10 text-neon-cyan'
+                        : 'text-slate-300 hover:bg-ink-800 hover:text-slate-100',
+                    )}
+                  >
+                    <span className="truncate">{m}</span>
+                    {value === m && (
+                      <Check className="h-3.5 w-3.5 shrink-0 text-neon-cyan" />
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -919,11 +1111,25 @@ export default function ConfigPage() {
                   onChange={(v) => patch({ anthropicKey: v })}
                   placeholder="sk-ant-..."
                 />
+                <ApiModelPicker
+                  provider="anthropic"
+                  label="Anthropic Model"
+                  apiKey={f.anthropicKey ?? ''}
+                  value={f.anthropicModel ?? ''}
+                  onChange={(v) => patch({ anthropicModel: v })}
+                />
                 <TextField
                   label="OpenAI API Key"
                   value={f.openAIKey ?? ''}
                   onChange={(v) => patch({ openAIKey: v })}
                   placeholder="sk-..."
+                />
+                <ApiModelPicker
+                  provider="openai"
+                  label="OpenAI Model"
+                  apiKey={f.openAIKey ?? ''}
+                  value={f.openAIModel ?? ''}
+                  onChange={(v) => patch({ openAIModel: v })}
                 />
                 <TextField
                   label="Google API Key"
@@ -931,11 +1137,25 @@ export default function ConfigPage() {
                   onChange={(v) => patch({ googleKey: v })}
                   placeholder="AIza..."
                 />
+                <ApiModelPicker
+                  provider="google"
+                  label="Google Model"
+                  apiKey={f.googleKey ?? ''}
+                  value={f.googleModel ?? ''}
+                  onChange={(v) => patch({ googleModel: v })}
+                />
                 <TextField
                   label="DeepSeek API Key"
                   value={f.deepSeekKey ?? ''}
                   onChange={(v) => patch({ deepSeekKey: v })}
                   placeholder="sk-..."
+                />
+                <ApiModelPicker
+                  provider="deepseek"
+                  label="DeepSeek Model"
+                  apiKey={f.deepSeekKey ?? ''}
+                  value={f.deepSeekModel ?? ''}
+                  onChange={(v) => patch({ deepSeekModel: v })}
                 />
                 <TextField
                   label="Groq API Key"
@@ -943,11 +1163,25 @@ export default function ConfigPage() {
                   onChange={(v) => patch({ groqKey: v })}
                   placeholder="gsk_..."
                 />
+                <ApiModelPicker
+                  provider="groq"
+                  label="Groq Model"
+                  apiKey={f.groqKey ?? ''}
+                  value={f.groqModel ?? ''}
+                  onChange={(v) => patch({ groqModel: v })}
+                />
                 <TextField
                   label="Mistral API Key"
                   value={f.mistralKey ?? ''}
                   onChange={(v) => patch({ mistralKey: v })}
                   placeholder="..."
+                />
+                <ApiModelPicker
+                  provider="mistral"
+                  label="Mistral Model"
+                  apiKey={f.mistralKey ?? ''}
+                  value={f.mistralModel ?? ''}
+                  onChange={(v) => patch({ mistralModel: v })}
                 />
                 <TextField
                   label="Together AI API Key"
@@ -955,17 +1189,38 @@ export default function ConfigPage() {
                   onChange={(v) => patch({ togetherKey: v })}
                   placeholder="..."
                 />
+                <ApiModelPicker
+                  provider="together"
+                  label="Together Model"
+                  apiKey={f.togetherKey ?? ''}
+                  value={f.togetherModel ?? ''}
+                  onChange={(v) => patch({ togetherModel: v })}
+                />
                 <TextField
                   label="OpenRouter API Key"
                   value={f.openRouterKey ?? ''}
                   onChange={(v) => patch({ openRouterKey: v })}
                   placeholder="sk-or-..."
                 />
+                <ApiModelPicker
+                  provider="openrouter"
+                  label="OpenRouter Model"
+                  apiKey={f.openRouterKey ?? ''}
+                  value={f.openRouterModel ?? ''}
+                  onChange={(v) => patch({ openRouterModel: v })}
+                />
                 <TextField
                   label="xAI API Key"
                   value={f.xaiKey ?? ''}
                   onChange={(v) => patch({ xaiKey: v })}
                   placeholder="xai-..."
+                />
+                <ApiModelPicker
+                  provider="xai"
+                  label="xAI Model"
+                  apiKey={f.xaiKey ?? ''}
+                  value={f.xaiModel ?? ''}
+                  onChange={(v) => patch({ xaiModel: v })}
                 />
               </div>
             )}

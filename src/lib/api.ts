@@ -509,6 +509,19 @@ export const api = {
     return request(`/llm/pull/${encodeURIComponent(model)}/status`);
   },
 
+  /* ------------------------------ AI models ----------------------------- */
+
+  /** Lists the models available to an API provider's key. */
+  async getAIModels(
+    provider: string,
+    key: string,
+  ): Promise<{ provider: string; models: string[] }> {
+    return request('/ai/models', {
+      method: 'POST',
+      body: JSON.stringify({ provider, key }),
+    });
+  },
+
   /* -------------------------------- Logs ------------------------------- */
 
   async getLogs(filter?: string): Promise<{ lines: string[]; filter: string }> {

@@ -163,6 +163,47 @@ describe('ConfigPage', () => {
     );
   });
 
+  it('loads provider models when a key is set and persists the selected model', async () => {
+    vi.spyOn(api, 'getConfig').mockResolvedValue(makeConfig({
+      aiAssist: true,
+      aiProvider: 'api',
+      googleKey: 'AIza-test',
+    }));
+    const saveConfig = vi
+      .spyOn(api, 'saveConfig')
+      .mockResolvedValue(makeConfig({ aiAssist: true, aiProvider: 'api' }));
+    vi.spyOn(api, 'getAIModels').mockResolvedValue({
+      provider: 'google',
+      models: ['gemini-2.5-flash', 'gemini-2.5-pro'],
+    });
+
+    renderPage();
+
+    // The Google model picker gets enabled once the config loads and the
+    // models fetch resolves — re-query each poll because the input element is
+    // replaced across loading states.
+    await waitFor(
+      () =>
+        expect(
+          screen.getByRole('combobox', { name: /google model/i }),
+        ).not.toBeDisabled(),
+      { timeout: 3000 },
+    );
+    const picker = screen.getByRole('combobox', { name: /google model/i });
+    expect(picker.tagName).toBe('INPUT');
+
+    // Open the combobox and pick a model from the themed dropdown.
+    fireEvent.focus(picker);
+    fireEvent.click(await screen.findByRole('option', { name: 'gemini-2.5-pro' }));
+    await waitFor(
+      () =>
+        expect(saveConfig).toHaveBeenCalledWith(
+          expect.objectContaining({ googleModel: 'gemini-2.5-pro' }),
+        ),
+      { timeout: 2000 },
+    );
+  });
+
   it('saves on the Save now button and shows the success indicator', async () => {
     vi.spyOn(api, 'getConfig').mockResolvedValue(makeConfig());
     const saveConfig = vi
