@@ -19,6 +19,7 @@ import { api } from '@/lib/api';
 import { backfilledLabels, contactPatch } from '@/lib/resume-backfill';
 import { useConfig } from '@/hooks/useConfig';
 import { useUpdateConfig } from '@/hooks/useUpdateConfig';
+import { useAIModels } from '@/hooks/useAIModels';
 import { cn } from '@/lib/utils';
 import type { NexusConfig } from '@/types';
 
@@ -380,6 +381,75 @@ function ModelPicker({
         onChange={onChange}
         placeholder="llama3.2:latest"
       />
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  API Provider Model Picker — live from the provider's /models endpoint     */
+/* -------------------------------------------------------------------------- */
+function ApiModelPicker({
+  provider,
+  label,
+  apiKey,
+  value,
+  onChange,
+}: {
+  provider: string;
+  label: string;
+  apiKey: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const datalistId = `ai-models-${provider}`;
+  const { data, isLoading, error } = useAIModels(provider, apiKey);
+  const models = data?.models ?? [];
+  const errMsg = error instanceof Error ? error.message : String(error ?? '');
+
+  return (
+    <div className="space-y-1.5">
+      <label
+        htmlFor={datalistId}
+        className="block text-xs font-medium uppercase tracking-wider text-slate-500"
+      >
+        {label}
+      </label>
+      {!apiKey.trim() ? (
+        <input
+          id={datalistId}
+          disabled
+          className={inputCls}
+          placeholder="Enter the API key above to load its models"
+        />
+      ) : isLoading ? (
+        <input
+          id={datalistId}
+          disabled
+          className={inputCls}
+          placeholder="Loading models…"
+        />
+      ) : (
+        <>
+          <input
+            id={datalistId}
+            list={`${datalistId}-list`}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={models[0] ? `e.g. ${models[0]}` : 'type a model name…'}
+            className={inputCls}
+          />
+          <datalist id={`${datalistId}-list`}>
+            {models.map((m) => (
+              <option key={m} value={m} />
+            ))}
+          </datalist>
+          {error && (
+            <p className="text-[11px] text-red-400">
+              Couldn't load models: {errMsg}
+            </p>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -919,11 +989,25 @@ export default function ConfigPage() {
                   onChange={(v) => patch({ anthropicKey: v })}
                   placeholder="sk-ant-..."
                 />
+                <ApiModelPicker
+                  provider="anthropic"
+                  label="Anthropic Model"
+                  apiKey={f.anthropicKey ?? ''}
+                  value={f.anthropicModel ?? ''}
+                  onChange={(v) => patch({ anthropicModel: v })}
+                />
                 <TextField
                   label="OpenAI API Key"
                   value={f.openAIKey ?? ''}
                   onChange={(v) => patch({ openAIKey: v })}
                   placeholder="sk-..."
+                />
+                <ApiModelPicker
+                  provider="openai"
+                  label="OpenAI Model"
+                  apiKey={f.openAIKey ?? ''}
+                  value={f.openAIModel ?? ''}
+                  onChange={(v) => patch({ openAIModel: v })}
                 />
                 <TextField
                   label="Google API Key"
@@ -931,11 +1015,25 @@ export default function ConfigPage() {
                   onChange={(v) => patch({ googleKey: v })}
                   placeholder="AIza..."
                 />
+                <ApiModelPicker
+                  provider="google"
+                  label="Google Model"
+                  apiKey={f.googleKey ?? ''}
+                  value={f.googleModel ?? ''}
+                  onChange={(v) => patch({ googleModel: v })}
+                />
                 <TextField
                   label="DeepSeek API Key"
                   value={f.deepSeekKey ?? ''}
                   onChange={(v) => patch({ deepSeekKey: v })}
                   placeholder="sk-..."
+                />
+                <ApiModelPicker
+                  provider="deepseek"
+                  label="DeepSeek Model"
+                  apiKey={f.deepSeekKey ?? ''}
+                  value={f.deepSeekModel ?? ''}
+                  onChange={(v) => patch({ deepSeekModel: v })}
                 />
                 <TextField
                   label="Groq API Key"
@@ -943,11 +1041,25 @@ export default function ConfigPage() {
                   onChange={(v) => patch({ groqKey: v })}
                   placeholder="gsk_..."
                 />
+                <ApiModelPicker
+                  provider="groq"
+                  label="Groq Model"
+                  apiKey={f.groqKey ?? ''}
+                  value={f.groqModel ?? ''}
+                  onChange={(v) => patch({ groqModel: v })}
+                />
                 <TextField
                   label="Mistral API Key"
                   value={f.mistralKey ?? ''}
                   onChange={(v) => patch({ mistralKey: v })}
                   placeholder="..."
+                />
+                <ApiModelPicker
+                  provider="mistral"
+                  label="Mistral Model"
+                  apiKey={f.mistralKey ?? ''}
+                  value={f.mistralModel ?? ''}
+                  onChange={(v) => patch({ mistralModel: v })}
                 />
                 <TextField
                   label="Together AI API Key"
@@ -955,17 +1067,38 @@ export default function ConfigPage() {
                   onChange={(v) => patch({ togetherKey: v })}
                   placeholder="..."
                 />
+                <ApiModelPicker
+                  provider="together"
+                  label="Together Model"
+                  apiKey={f.togetherKey ?? ''}
+                  value={f.togetherModel ?? ''}
+                  onChange={(v) => patch({ togetherModel: v })}
+                />
                 <TextField
                   label="OpenRouter API Key"
                   value={f.openRouterKey ?? ''}
                   onChange={(v) => patch({ openRouterKey: v })}
                   placeholder="sk-or-..."
                 />
+                <ApiModelPicker
+                  provider="openrouter"
+                  label="OpenRouter Model"
+                  apiKey={f.openRouterKey ?? ''}
+                  value={f.openRouterModel ?? ''}
+                  onChange={(v) => patch({ openRouterModel: v })}
+                />
                 <TextField
                   label="xAI API Key"
                   value={f.xaiKey ?? ''}
                   onChange={(v) => patch({ xaiKey: v })}
                   placeholder="xai-..."
+                />
+                <ApiModelPicker
+                  provider="xai"
+                  label="xAI Model"
+                  apiKey={f.xaiKey ?? ''}
+                  value={f.xaiModel ?? ''}
+                  onChange={(v) => patch({ xaiModel: v })}
                 />
               </div>
             )}

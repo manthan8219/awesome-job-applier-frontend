@@ -106,6 +106,16 @@ export interface NexusConfig {
   togetherKey?: string;
   openRouterKey?: string;
   xaiKey?: string;
+  /** Per-provider model overrides; empty = the provider's backend default. */
+  anthropicModel?: string;
+  openAIModel?: string;
+  googleModel?: string;
+  deepSeekModel?: string;
+  groqModel?: string;
+  mistralModel?: string;
+  togetherModel?: string;
+  openRouterModel?: string;
+  xaiModel?: string;
   localLLMURL?: string;
   localLLMModel?: string;
   // Apply safety
