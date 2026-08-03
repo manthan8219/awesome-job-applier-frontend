@@ -1,6 +1,17 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from 'react';
+import {
+  Check,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Circle,
   Loader2,
   Save,
@@ -401,54 +412,165 @@ function ApiModelPicker({
   value: string;
   onChange: (v: string) => void;
 }) {
-  const datalistId = `ai-models-${provider}`;
+  const inputId = `ai-models-${provider}`;
   const { data, isLoading, error } = useAIModels(provider, apiKey);
   const models = data?.models ?? [];
   const errMsg = error instanceof Error ? error.message : String(error ?? '');
 
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [highlight, setHighlight] = useState(0);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // When closed, the trigger always shows the committed value; the filter
+  // query only applies while the panel is open.
+  const shown = open ? query : value;
+  const filtered = models.filter((m) =>
+    m.toLowerCase().includes(query.trim().toLowerCase()),
+  );
+
+  // Reflect external value changes (config load, clears) into the query.
+  useEffect(() => {
+    if (!open) setQuery(value);
+  }, [value, open]);
+
+  // Close when clicking/tapping outside the control.
+  useEffect(() => {
+    if (!open) return;
+    function onDocClick(e: MouseEvent) {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [open]);
+
+  function select(m: string) {
+    onChange(m);
+    setOpen(false);
+    setQuery(m);
+  }
+
+  function handleKey(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Escape') {
+      setOpen(false);
+      return;
+    }
+    if (!open) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlight((h) => Math.min(h + 1, Math.max(filtered.length - 1, 0)));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlight((h) => Math.max(h - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const pick = filtered[highlight];
+      if (pick) select(pick);
+    }
+  }
+
   return (
     <div className="space-y-1.5">
       <label
-        htmlFor={datalistId}
+        htmlFor={inputId}
         className="block text-xs font-medium uppercase tracking-wider text-slate-500"
       >
         {label}
       </label>
+
       {!apiKey.trim() ? (
-        <input
-          id={datalistId}
-          disabled
-          className={inputCls}
-          placeholder="Enter the API key above to load its models"
-        />
-      ) : isLoading ? (
-        <input
-          id={datalistId}
-          disabled
-          className={inputCls}
-          placeholder="Loading models…"
-        />
+        <div className="rounded-xl border border-white/5 bg-ink-950/60 px-3.5 py-2.5 text-sm text-slate-600">
+          Enter the API key above to load its models
+        </div>
       ) : (
-        <>
+        <div ref={rootRef} className="relative">
           <input
-            id={datalistId}
-            list={`${datalistId}-list`}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={models[0] ? `e.g. ${models[0]}` : 'type a model name…'}
-            className={inputCls}
+            id={inputId}
+            role="combobox"
+            aria-expanded={open}
+            aria-haspopup="listbox"
+            aria-autocomplete="list"
+            disabled={isLoading}
+            value={shown}
+            onFocus={() => {
+              setOpen(true);
+              setHighlight(0);
+            }}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+              setHighlight(0);
+            }}
+            onKeyDown={handleKey}
+            placeholder={
+              isLoading
+                ? 'Loading models…'
+                : models[0]
+                  ? `e.g. ${models[0]}`
+                  : 'type a model name…'
+            }
+            className={cn(inputCls, 'pr-9')}
           />
-          <datalist id={`${datalistId}-list`}>
-            {models.map((m) => (
-              <option key={m} value={m} />
-            ))}
-          </datalist>
-          {error && (
-            <p className="text-[11px] text-red-400">
-              Couldn't load models: {errMsg}
-            </p>
+          {!isLoading && (
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label={`${label} options`}
+              onClick={() => setOpen((o) => !o)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-500 transition-colors hover:text-slate-300"
+            >
+              {open ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
           )}
-        </>
+
+          {open && !isLoading && (
+            <div
+              role="listbox"
+              aria-label={label}
+              className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-white/10 bg-ink-900/95 p-1 shadow-2xl backdrop-blur"
+            >
+              {error ? (
+                <div className="px-3 py-2 text-xs text-red-400">
+                  Couldn't load models: {errMsg}
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="px-3 py-2 text-xs text-slate-500">
+                  {models.length === 0
+                    ? 'No models returned for this key.'
+                    : `No models match “${query}”. Press Enter to use it as a custom model.`}
+                </div>
+              ) : (
+                filtered.map((m, i) => (
+                  <button
+                    key={m}
+                    type="button"
+                    role="option"
+                    aria-selected={value === m}
+                    onClick={() => select(m)}
+                    onMouseEnter={() => setHighlight(i)}
+                    className={cn(
+                      'flex w-full items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-left text-xs transition-colors',
+                      i === highlight
+                        ? 'bg-neon-cyan/10 text-neon-cyan'
+                        : 'text-slate-300 hover:bg-ink-800 hover:text-slate-100',
+                    )}
+                  >
+                    <span className="truncate">{m}</span>
+                    {value === m && (
+                      <Check className="h-3.5 w-3.5 shrink-0 text-neon-cyan" />
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

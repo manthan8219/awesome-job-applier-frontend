@@ -183,12 +183,18 @@ describe('ConfigPage', () => {
     // models fetch resolves — re-query each poll because the input element is
     // replaced across loading states.
     await waitFor(
-      () => expect(screen.getByLabelText(/google model/i)).not.toBeDisabled(),
+      () =>
+        expect(
+          screen.getByRole('combobox', { name: /google model/i }),
+        ).not.toBeDisabled(),
       { timeout: 3000 },
     );
-    const picker = screen.getByLabelText(/google model/i);
+    const picker = screen.getByRole('combobox', { name: /google model/i });
     expect(picker.tagName).toBe('INPUT');
-    fireEvent.change(picker, { target: { value: 'gemini-2.5-pro' } });
+
+    // Open the combobox and pick a model from the themed dropdown.
+    fireEvent.focus(picker);
+    fireEvent.click(await screen.findByRole('option', { name: 'gemini-2.5-pro' }));
     await waitFor(
       () =>
         expect(saveConfig).toHaveBeenCalledWith(
