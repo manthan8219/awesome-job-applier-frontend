@@ -23,6 +23,7 @@ import type {
   WorkProject,
 } from '@/types/resume';
 import type { UsageSnapshot } from '@/types/usage';
+import type { Highlight } from '@/types/highlights';
 import type { AnalyticsSnapshot } from '@/types/analytics';
 import type {
   NotifyChannel,
@@ -543,6 +544,10 @@ export const api = {
 
   async getAnalytics(): Promise<AnalyticsSnapshot> {
     return request<AnalyticsSnapshot>('/analytics');
+  },
+
+  async getHighlights(): Promise<Highlight[]> {
+    return request<Highlight[]>('/highlights');
   },
 
   /* ---------------------------- Notifications -------------------------- */
