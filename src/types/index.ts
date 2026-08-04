@@ -160,6 +160,7 @@ export interface NexusConfig {
   dailyRunEnabled?: boolean; // run a safe dry-run search once a day
   dailyRunAt?: string; // "HH:MM" 24h — when the daily dry-run fires
   emailNotifications?: boolean; // send run summaries by email (backend)
+  inboxScanMinutes?: number; // auto-scan inbox for hiring signals every N minutes (0 = off)
 }
 
 export interface ReadyCheck {

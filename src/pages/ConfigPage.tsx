@@ -1454,6 +1454,27 @@ export default function ConfigPage() {
           nothing. It fires while the dashboard is open; the Go backend can
           schedule it even when the app is closed (coming soon).
         </p>
+        <div className="space-y-1">
+          <label
+            htmlFor="inbox-scan-minutes"
+            className="block text-xs font-medium uppercase tracking-wider text-slate-500"
+          >
+            Inbox scan interval (minutes)
+          </label>
+          <input
+            id="inbox-scan-minutes"
+            type="number"
+            min={0}
+            value={f.inboxScanMinutes ?? 0}
+            onChange={(e) => patch({ inboxScanMinutes: Number(e.target.value) })}
+            className={inputCls}
+          />
+          <p className="text-xs text-slate-500">
+            Auto-scan your inbox for hiring-email signals (interviews, offers,
+            rejections, recruiter outreach) every N minutes. 0 disables it — run
+            manually with 'nexus --scan-inbox' or the Inbox tab.
+          </p>
+        </div>
         <Toggle
           label="Email me run updates"
           value={f.emailNotifications ?? false}
