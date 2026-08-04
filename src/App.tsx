@@ -12,6 +12,7 @@ import BookmarkletPage from '@/pages/BookmarkletPage';
 import CompaniesPage from '@/pages/CompaniesPage';
 import OutreachPage from '@/pages/OutreachPage';
 import ContactsPage from '@/pages/ContactsPage';
+import HighlightsPage from '@/pages/HighlightsPage';
 import LogsPage from '@/pages/LogsPage';
 import AnalyticsPage from '@/pages/AnalyticsPage';
 import ResponsePage from '@/pages/ResponsePage';
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/companies" element={<CompaniesPage />} />
           <Route path="/outreach" element={<OutreachPage />} />
           <Route path="/contacts" element={<ContactsPage />} />
+          <Route path="/inbox" element={<HighlightsPage />} />
           <Route path="/logs" element={<LogsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/response" element={<ResponsePage />} />
