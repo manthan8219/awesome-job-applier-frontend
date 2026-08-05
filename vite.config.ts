@@ -25,6 +25,15 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // latex.js bundles dynamic require("./documentclasses/…") calls; esbuild
+  // scans those dirs and trips on the empty ".keep" placeholder files. They
+  // are never loaded at runtime (our preview strips the preamble), so treat
+  // them as empty modules.
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: { '.keep': 'empty' },
+    },
+  },
   server: {
     port: 5173,
     host: true,
