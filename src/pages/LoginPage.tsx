@@ -4,17 +4,20 @@ import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
 
 /**
- * LoginPage is the ready-made sign-in wall shown by AuthGate when Supabase
- * auth is enabled and there is no session. Supports email + password and a
- * magic-link (OTP) option; Google OAuth appears when the project's providers
- * include it. All real session work happens in supabase-js — the page only
+ * LoginPage is the ready-made auth wall shown by AuthGate when Supabase auth
+ * is enabled and there is no session. New users can register (email +
+ * password, with the provider's email confirmation when enabled), existing
+ * users can sign in, and everyone can use a magic link (which auto-registers
+ * on first use). All real session work happens in supabase-js — the page only
  * surfaces provider errors.
  */
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [magic, setMagic] = useState(false);
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   if (!supabase) return null; // only ever rendered when auth is enabled
@@ -23,13 +26,18 @@ export default function LoginPage() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setNotice(null);
     const trimmed = email.trim();
     if (!trimmed) {
       setError('Enter your email');
       return;
     }
     if (!magic && !password) {
-      setError('Enter your password');
+      setError(mode === 'signup' ? 'Choose a password' : 'Enter your password');
+      return;
+    }
+    if (mode === 'signup' && password.length < 6) {
+      setError('Password must be at least 6 characters');
       return;
     }
     setLoading(true);
@@ -37,7 +45,21 @@ export default function LoginPage() {
       if (magic) {
         const { error: signErr } = await sb.auth.signInWithOtp({ email: trimmed });
         if (signErr) throw signErr;
-        setError('Check your inbox for a magic link, then come back here.');
+        setNotice('Check your inbox for a magic link, then come back here.');
+        return;
+      }
+      if (mode === 'signup') {
+        const { data, error: signErr } = await sb.auth.signUp({
+          email: trimmed,
+          password,
+        });
+        if (signErr) throw signErr;
+        if (!data.session) {
+          // Email confirmation is enabled: the new user must click the link.
+          setNotice('Account created — check your email to confirm, then sign in.');
+          return;
+        }
+        // Signed in immediately (confirmations off): AuthGate flips by itself.
         return;
       }
       const { error: signErr } = await sb.auth.signInWithPassword({
@@ -47,7 +69,13 @@ export default function LoginPage() {
       if (signErr) throw signErr;
       // AuthGate flips to the dashboard on the session event.
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign in failed');
+      setError(
+        err instanceof Error
+          ? err.message
+          : mode === 'signup'
+            ? 'Sign up failed'
+            : 'Sign in failed',
+      );
     } finally {
       setLoading(false);
     }
@@ -67,11 +95,12 @@ export default function LoginPage() {
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <Logo className="h-10 w-10" />
           <h1 className="font-display text-xl font-semibold text-slate-50">
-            Sign in to Nexus
+            {mode === 'signup' ? 'Create your Nexus account' : 'Sign in to Nexus'}
           </h1>
           <p className="text-sm text-slate-400">
-            Your job-hunt command center — resumes, applications, and outreach,
-            locked to your account.
+            {mode === 'signup'
+              ? 'Register in seconds — resumes, applications, and outreach, locked to your account.'
+              : 'Your job-hunt command center — resumes, applications, and outreach, locked to your account.'}
           </p>
         </div>
 
@@ -102,7 +131,7 @@ export default function LoginPage() {
               <input
                 id="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                 className={inputClass}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -111,6 +140,11 @@ export default function LoginPage() {
             </div>
           )}
 
+          {notice && (
+            <p role="status" className="text-xs text-emerald-400">
+              {notice}
+            </p>
+          )}
           {error && (
             <p role="alert" className="text-xs text-red-400">
               {error}
@@ -118,14 +152,36 @@ export default function LoginPage() {
           )}
 
           <Button type="submit" variant="primary" size="md" disabled={loading}>
-            {loading ? 'Signing in…' : magic ? 'Send magic link' : 'Sign in'}
+            {loading
+              ? mode === 'signup'
+                ? 'Creating account…'
+                : 'Signing in…'
+              : magic
+                ? 'Send magic link'
+                : mode === 'signup'
+                  ? 'Sign up'
+                  : 'Sign in'}
           </Button>
         </form>
 
         <button
           type="button"
-          onClick={() => setMagic((m) => !m)}
+          onClick={() => {
+            setMode((m) => (m === 'signin' ? 'signup' : 'signin'));
+            setMagic(false);
+            setError(null);
+            setNotice(null);
+          }}
           className="mt-4 w-full text-center text-xs text-slate-500 hover:text-neon-cyan"
+        >
+          {mode === 'signin'
+            ? 'New to Nexus? Create an account'
+            : 'Have an account? Sign in'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setMagic((m) => !m)}
+          className="mt-1 w-full text-center text-xs text-slate-600 hover:text-neon-cyan"
         >
           {magic ? 'Use email + password instead' : 'Prefer a magic link?'}
         </button>

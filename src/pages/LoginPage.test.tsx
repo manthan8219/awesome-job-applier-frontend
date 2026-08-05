@@ -5,6 +5,7 @@ import LoginPage from './LoginPage';
 const mocks = vi.hoisted(() => ({
   signInWithPassword: vi.fn(),
   signInWithOtp: vi.fn(),
+  signUp: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase', () => ({
@@ -17,6 +18,7 @@ vi.mock('@/lib/supabase', () => ({
       })),
       signInWithPassword: mocks.signInWithPassword,
       signInWithOtp: mocks.signInWithOtp,
+      signUp: mocks.signUp,
     },
   },
 }));
@@ -82,5 +84,90 @@ describe('LoginPage', () => {
     expect(mocks.signInWithOtp).toHaveBeenCalledWith({
       email: 'ada@example.com',
     });
+  });
+
+  it('switches to the sign-up form', async () => {
+    render(<LoginPage />);
+    fireEvent.click(screen.getByText(/new to nexus\? create an account/i));
+    expect(
+      await screen.findByRole('heading', { name: /create your nexus account/i }),
+    ).toBeVisible();
+  });
+
+  it('registers a new user with signUp', async () => {
+    mocks.signUp.mockResolvedValue({
+      data: { session: { user: { id: 'u1' } } },
+      error: null,
+    });
+    render(<LoginPage />);
+    fireEvent.click(screen.getByText(/new to nexus\? create an account/i));
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'new@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: 'hunter2' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+    expect(mocks.signUp).toHaveBeenCalledWith({
+      email: 'new@example.com',
+      password: 'hunter2',
+    });
+  });
+
+  it('asks to confirm the email when sign-ups require confirmation', async () => {
+    mocks.signUp.mockResolvedValue({
+      data: { session: null, user: { id: 'u1' } },
+      error: null,
+    });
+    render(<LoginPage />);
+    fireEvent.click(screen.getByText(/new to nexus\? create an account/i));
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'new@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: 'hunter2' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+    expect(
+      await screen.findByText(/check your email to confirm/i),
+    ).toBeVisible();
+    expect(mocks.signInWithPassword).not.toHaveBeenCalled();
+  });
+
+  it('rejects a short password on sign-up', async () => {
+    render(<LoginPage />);
+    fireEvent.click(screen.getByText(/new to nexus\? create an account/i));
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'new@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: '123' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+    expect(
+      await screen.findByText(/password must be at least 6 characters/i),
+    ).toBeVisible();
+    expect(mocks.signUp).not.toHaveBeenCalled();
+  });
+
+  it('surfaces sign-up errors', async () => {
+    mocks.signUp.mockResolvedValue({
+      data: { session: null },
+      error: new Error('User already registered'),
+    });
+    render(<LoginPage />);
+    fireEvent.click(screen.getByText(/new to nexus\? create an account/i));
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'taken@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: 'hunter2' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+    expect(await screen.findByText('User already registered')).toBeVisible();
   });
 });
