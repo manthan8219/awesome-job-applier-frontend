@@ -1,0 +1,8 @@
+# Docker build context hygiene: the local uncommitted .env must never be the
+# source of VITE_* build vars (it's gitignored, so the production build would
+# silently build an auth-disabled bundle). Vite config comes from Docker build
+# args only. Keep .env.example (committed) in the context.
+node_modules
+dist
+.env
+.env.local

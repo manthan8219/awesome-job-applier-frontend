@@ -8,6 +8,17 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# Build-time Vite env. Vite inlines VITE_* vars when `npm run build` runs, so
+# these must exist in the build stage — never rely on an uncommitted .env being
+# in the build context. Pass them as build args (docker-compose `build.args`,
+# Render service env, or CI `--build-arg`); empty defaults keep auth disabled.
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+ARG VITE_API_BASE_URL
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL \
+    VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY \
+    VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 # Copy source and build the production bundle (tsc + vite).
 COPY . .
 RUN npm run build
