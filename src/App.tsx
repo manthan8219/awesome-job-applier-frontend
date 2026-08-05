@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { AuthProvider, AuthGate } from '@/lib/auth-context';
 import AppLayout from '@/layouts/AppLayout';
 import OnboardingGate from '@/components/onboarding/OnboardingGate';
 import OnboardingPage from '@/pages/OnboardingPage';
@@ -20,32 +21,36 @@ import NotFoundPage from '@/pages/NotFoundPage';
 
 export default function App() {
   return (
-    <Routes>
-      {/* First-run wizard is full-screen, outside the app shell. */}
-      <Route path="/onboarding" element={<OnboardingPage />} />
+    <AuthProvider>
+      <AuthGate>
+        <Routes>
+          {/* First-run wizard is full-screen, outside the app shell. */}
+          <Route path="/onboarding" element={<OnboardingPage />} />
 
-      {/* The app shell is gated: users without a search profile go through
-          the onboarding wizard first. */}
-      <Route element={<OnboardingGate />}>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/config" element={<ConfigPage />} />
-          <Route path="/resume" element={<ResumePage />} />
-          <Route path="/jobs" element={<JobsPage />} />
-          <Route path="/jobs/new" element={<JobNewPage />} />
-          <Route path="/bookmarklet" element={<BookmarkletPage />} />
-          <Route path="/jobs/:id" element={<JobDetailPage />} />
-          <Route path="/companies" element={<CompaniesPage />} />
-          <Route path="/outreach" element={<OutreachPage />} />
-          <Route path="/contacts" element={<ContactsPage />} />
-          <Route path="/inbox" element={<HighlightsPage />} />
-          <Route path="/logs" element={<LogsPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="/response" element={<ResponsePage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Route>
-    </Routes>
+          {/* The app shell is gated: users without a search profile go through
+              the onboarding wizard first. */}
+          <Route element={<OnboardingGate />}>
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/config" element={<ConfigPage />} />
+              <Route path="/resume" element={<ResumePage />} />
+              <Route path="/jobs" element={<JobsPage />} />
+              <Route path="/jobs/new" element={<JobNewPage />} />
+              <Route path="/bookmarklet" element={<BookmarkletPage />} />
+              <Route path="/jobs/:id" element={<JobDetailPage />} />
+              <Route path="/companies" element={<CompaniesPage />} />
+              <Route path="/outreach" element={<OutreachPage />} />
+              <Route path="/contacts" element={<ContactsPage />} />
+              <Route path="/inbox" element={<HighlightsPage />} />
+              <Route path="/logs" element={<LogsPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/response" element={<ResponsePage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
+          </Route>
+        </Routes>
+      </AuthGate>
+    </AuthProvider>
   );
 }
