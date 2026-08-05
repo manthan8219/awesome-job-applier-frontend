@@ -8,8 +8,8 @@ export default function Logo({ className }: { className?: string }) {
         <Terminal className="h-4 w-4 text-neon-cyan" />
       </span>
       <span className="font-display text-base font-semibold tracking-tight">
-        <span className="neon-text">terminal</span>
-        <span className="text-slate-200">·job</span>
+        <span className="neon-text">Job</span>
+        <span className="text-slate-200">Pilot</span>
       </span>
     </div>
   );
