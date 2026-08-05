@@ -1239,7 +1239,7 @@ export default function ConfigPage() {
           fast.
         </div>
         <Toggle
-          label="Apply Consent (acknowledge Nexus may submit on your behalf)"
+          label="Apply Consent (acknowledge JobPilot may submit on your behalf)"
           value={f.applyConsent ?? false}
           onChange={(v) =>
             patch({

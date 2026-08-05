@@ -12,7 +12,7 @@ describe('BookmarkletPage', () => {
     );
 
     expect(
-      screen.getByRole('heading', { name: /send jobs to nexus/i }),
+      screen.getByRole('heading', { name: /send jobs to jobpilot/i }),
     ).toBeInTheDocument();
     const link = screen.getByTestId('bookmarklet-link');
     expect(link.getAttribute('href')).toMatch(/^javascript:/);

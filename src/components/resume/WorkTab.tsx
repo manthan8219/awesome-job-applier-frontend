@@ -226,7 +226,7 @@ export function WorkTab() {
             Step 2 — Your work
           </p>
           <p className="text-sm text-slate-400">
-            Projects Nexus weaves into your rewritten resume.
+            Projects JobPilot weaves into your rewritten resume.
           </p>
         </div>
         {!editing && (
@@ -287,7 +287,7 @@ export function WorkTab() {
           <EmptyState
             icon={Briefcase}
             title="No projects yet"
-            description="Add the repos you shipped — Nexus blends them into a stronger resume."
+            description="Add the repos you shipped — JobPilot blends them into a stronger resume."
             className="py-16"
           />
         </Card>

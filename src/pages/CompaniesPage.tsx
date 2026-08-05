@@ -233,7 +233,7 @@ export default function CompaniesPage() {
           Company index
         </h1>
         <p className="text-sm text-slate-400">
-          ATS boards Nexus watches. Search, add, or refresh from the network.
+          ATS boards JobPilot watches. Search, add, or refresh from the network.
         </p>
       </header>
 

@@ -31,7 +31,7 @@ describe('LoginPage', () => {
   it('renders the sign-in form', () => {
     render(<LoginPage />);
     expect(
-      screen.getByRole('heading', { name: /sign in to nexus/i }),
+      screen.getByRole('heading', { name: /sign in to jobpilot/i }),
     ).toBeVisible();
   });
 
@@ -88,9 +88,9 @@ describe('LoginPage', () => {
 
   it('switches to the sign-up form', async () => {
     render(<LoginPage />);
-    fireEvent.click(screen.getByText(/new to nexus\? create an account/i));
+    fireEvent.click(screen.getByText(/new to jobpilot\? create an account/i));
     expect(
-      await screen.findByRole('heading', { name: /create your nexus account/i }),
+      await screen.findByRole('heading', { name: /create your jobpilot account/i }),
     ).toBeVisible();
   });
 
@@ -100,7 +100,7 @@ describe('LoginPage', () => {
       error: null,
     });
     render(<LoginPage />);
-    fireEvent.click(screen.getByText(/new to nexus\? create an account/i));
+    fireEvent.click(screen.getByText(/new to jobpilot\? create an account/i));
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: 'new@example.com' },
     });
@@ -121,7 +121,7 @@ describe('LoginPage', () => {
       error: null,
     });
     render(<LoginPage />);
-    fireEvent.click(screen.getByText(/new to nexus\? create an account/i));
+    fireEvent.click(screen.getByText(/new to jobpilot\? create an account/i));
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: 'new@example.com' },
     });
@@ -138,7 +138,7 @@ describe('LoginPage', () => {
 
   it('rejects a short password on sign-up', async () => {
     render(<LoginPage />);
-    fireEvent.click(screen.getByText(/new to nexus\? create an account/i));
+    fireEvent.click(screen.getByText(/new to jobpilot\? create an account/i));
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: 'new@example.com' },
     });
@@ -159,7 +159,7 @@ describe('LoginPage', () => {
       error: new Error('User already registered'),
     });
     render(<LoginPage />);
-    fireEvent.click(screen.getByText(/new to nexus\? create an account/i));
+    fireEvent.click(screen.getByText(/new to jobpilot\? create an account/i));
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: 'taken@example.com' },
     });

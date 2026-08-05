@@ -255,7 +255,7 @@ function ChannelSub({
           <EmptyState
             icon={Icon}
             title={`No ${isEmail ? 'email' : 'LinkedIn'} items yet`}
-            description={`Press Build ${isEmail ? 'email' : 'LinkedIn'} queue — Nexus drafts from your applied jobs.`}
+            description={`Press Build ${isEmail ? 'email' : 'LinkedIn'} queue — JobPilot drafts from your applied jobs.`}
             className="py-16"
           />
         </Card>
@@ -363,7 +363,7 @@ function SentSub() {
         Sent outreach
       </h3>
       <p className="text-sm text-slate-400">
-        Audit log of every email sent and LinkedIn action taken by Nexus.
+        Audit log of every email sent and LinkedIn action taken by JobPilot.
       </p>
       {isLoading ? (
         <Skeleton className="h-32 w-full" />

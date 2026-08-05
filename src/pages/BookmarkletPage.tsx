@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 /**
  * Bookmarklet installer: shows a small drag-to-bookmarks javascript: snippet
  * that reads the current job posting (title + URL + domain) and opens the
- * Nexus "Add a job" form pre-filled in a same-origin popup (no CORS needed).
+ * JobPilot "Add a job" form pre-filled in a same-origin popup (no CORS needed).
  */
 export default function BookmarkletPage() {
   const snippet = useMemo(() => {
@@ -22,7 +22,7 @@ export default function BookmarkletPage() {
           Tools
         </p>
         <h1 className="font-display text-3xl font-semibold text-slate-50">
-          Send jobs to Nexus
+          Send jobs to JobPilot
         </h1>
         <p className="text-sm text-slate-400">
           Install a bookmarklet — click it on any job posting to drop it into
@@ -44,7 +44,7 @@ export default function BookmarkletPage() {
             className="inline-flex items-center gap-2 rounded-xl border border-neon-cyan/40 bg-neon-cyan/10 px-4 py-2 text-sm font-medium text-neon-cyan transition-colors hover:bg-neon-cyan/20"
           >
             <Bookmark className="h-4 w-4" />
-            Send to Nexus
+            Send to JobPilot
           </a>
         </div>
 
@@ -56,7 +56,7 @@ export default function BookmarkletPage() {
             <li>Open any job posting (Greenhouse, Lever, a company site…).</li>
             <li>Click the bookmarklet.</li>
             <li>
-              A Nexus tab opens with the role, company, and URL pre-filled —
+              A JobPilot tab opens with the role, company, and URL pre-filled —
               just hit <span className="text-slate-200">Add to review queue</span>.
             </li>
           </ol>
@@ -82,9 +82,9 @@ export default function BookmarkletPage() {
           {snippet}
         </pre>
         <p className="text-xs text-slate-500">
-          It points at this Nexus origin (
+          It points at this JobPilot origin (
           <code className="text-slate-400">{window.location.origin}</code>).
-          If you run Nexus on another port, open this page from there.
+          If you run JobPilot on another port, open this page from there.
         </p>
       </Card>
 

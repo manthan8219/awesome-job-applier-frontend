@@ -294,7 +294,7 @@ describe('OnboardingPage', () => {
       target: { value: 'ada@example.com' },
     });
     fireEvent.click(
-      screen.getByRole('checkbox', { name: /i consent to nexus/i }),
+      screen.getByRole('checkbox', { name: /i consent to jobpilot/i }),
     );
 
     fireEvent.click(screen.getByRole('button', { name: /show me jobs/i }));
