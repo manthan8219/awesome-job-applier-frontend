@@ -23,7 +23,7 @@ function labelFor(key: string): string {
 }
 
 /**
- * Submitted payload audit (KAN-33): shows exactly what data Nexus sent to the
+ * Submitted payload audit (KAN-33): shows exactly what data JobPilot sent to the
  * employer for one application — profile fields, the resume file, and every
  * question→answer pair (AI-generated answers flagged). Collapsible so the
  * detail stays out of the way; renders a clear empty state when not recorded.
@@ -70,7 +70,7 @@ export function SubmittedPayloadCard({ app }: { app: Application }) {
         />
       </button>
       <p className="text-xs text-slate-500">
-        Exactly what Nexus sent to {app.company} for this application.
+        Exactly what JobPilot sent to {app.company} for this application.
       </p>
 
       {open && (

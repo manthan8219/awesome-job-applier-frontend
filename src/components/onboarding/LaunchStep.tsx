@@ -9,7 +9,7 @@ export function LaunchStep() {
         Starting your first search…
       </h1>
       <p className="max-w-md text-sm text-slate-400">
-        Nexus is scanning job boards for roles that match. This is a safe dry
+        JobPilot is scanning job boards for roles that match. This is a safe dry
         run — nothing is submitted, and matches stream in live on the
         dashboard. It targets quality matches; every real apply still needs
         your consent and stays inside your daily cap.

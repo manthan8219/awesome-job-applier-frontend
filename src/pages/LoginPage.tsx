@@ -95,7 +95,7 @@ export default function LoginPage() {
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <Logo className="h-10 w-10" />
           <h1 className="font-display text-xl font-semibold text-slate-50">
-            {mode === 'signup' ? 'Create your Nexus account' : 'Sign in to Nexus'}
+            {mode === 'signup' ? 'Create your JobPilot account' : 'Sign in to JobPilot'}
           </h1>
           <p className="text-sm text-slate-400">
             {mode === 'signup'
@@ -175,7 +175,7 @@ export default function LoginPage() {
           className="mt-4 w-full text-center text-xs text-slate-500 hover:text-neon-cyan"
         >
           {mode === 'signin'
-            ? 'New to Nexus? Create an account'
+            ? 'New to JobPilot? Create an account'
             : 'Have an account? Sign in'}
         </button>
         <button

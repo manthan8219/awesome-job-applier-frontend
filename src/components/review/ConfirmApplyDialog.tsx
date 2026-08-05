@@ -59,7 +59,7 @@ export function ConfirmApplyDialog({
           Submit {count} application{count === 1 ? '' : 's'}?
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-400">
-          Nexus will submit real applications to{' '}
+          JobPilot will submit real applications to{' '}
           <span className="font-semibold text-slate-200">
             {count} compan{count === 1 ? 'y' : 'ies'}
           </span>{' '}
@@ -76,7 +76,7 @@ export function ConfirmApplyDialog({
               className="mt-0.5 h-4 w-4 accent-neon-cyan"
             />
             <span className="text-xs leading-relaxed text-slate-300">
-              I understand Nexus will submit real applications on my behalf,
+              I understand JobPilot will submit real applications on my behalf,
               within my daily and per-run caps.
             </span>
           </label>

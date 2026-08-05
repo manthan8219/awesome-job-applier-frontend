@@ -55,7 +55,7 @@ describe('AuthGate', () => {
       </AuthProvider>,
     );
     expect(
-      await screen.findByRole('heading', { name: /sign in to nexus/i }),
+      await screen.findByRole('heading', { name: /sign in to jobpilot/i }),
     ).toBeVisible();
     expect(screen.queryByText('dashboard-content')).not.toBeInTheDocument();
   });
@@ -69,7 +69,7 @@ describe('AuthGate', () => {
         </AuthGate>
       </AuthProvider>,
     );
-    await screen.findByRole('heading', { name: /sign in to nexus/i });
+    await screen.findByRole('heading', { name: /sign in to jobpilot/i });
 
     act(() => {
       fire?.('SIGNED_IN', { user: { id: 'u1', email: 'ada@example.com' } });
@@ -77,7 +77,7 @@ describe('AuthGate', () => {
 
     expect(await screen.findByText('dashboard-content')).toBeVisible();
     expect(
-      screen.queryByRole('heading', { name: /sign in to nexus/i }),
+      screen.queryByRole('heading', { name: /sign in to jobpilot/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -93,7 +93,7 @@ describe('AuthGate', () => {
     );
     expect(screen.getByText('dashboard-content')).toBeVisible();
     expect(
-      screen.queryByRole('heading', { name: /sign in to nexus/i }),
+      screen.queryByRole('heading', { name: /sign in to jobpilot/i }),
     ).not.toBeInTheDocument();
   });
 });

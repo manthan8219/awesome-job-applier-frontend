@@ -228,7 +228,7 @@ export function ProfileStep({
           className="mt-0.5 h-4 w-4 accent-neon-cyan"
         />
         <span className="text-xs leading-relaxed text-slate-300">
-          I consent to Nexus submitting applications on my behalf, within my
+          I consent to JobPilot submitting applications on my behalf, within my
           daily and per-run caps, with a pause between each. You&apos;ll confirm
           again right before anything is actually sent.
         </span>
