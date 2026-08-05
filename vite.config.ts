@@ -8,6 +8,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        // latex.js ships empty .keep placeholder files in dist/documentclasses
+        // and dist/packages (they keep the dirs in git). Its bundle dynamic-
+        // requires them, so esbuild must know how to load them during the
+        // dependency pre-bundle, or `vite dev` fails with "No loader is
+        // configured for .keep files".
+        '.keep': 'empty',
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

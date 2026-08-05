@@ -30,6 +30,8 @@ import type {
   NotifySummaryResult,
   NotifyTestResult,
 } from '@/types/notifications';
+import { getAccessToken } from './auth-context';
+import { supabase, supabaseEnabled } from './supabase';
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(
   /\/$/,
@@ -46,14 +48,26 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  // Attach the Supabase access token when a session exists; no token is sent
+  // in local/auth-disabled mode (the backend's auth gate is off there).
+  const token = await getAccessToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(init?.headers as Record<string, string> | undefined),
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   const res = await fetch(`${BASE_URL}${path}`, {
     credentials: 'include',
     ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers as Record<string, string> | undefined),
-    },
+    headers,
   });
+  if (res.status === 401 && supabaseEnabled) {
+    // Session expired or revoked server-side: drop it and let AuthGate show
+    // the login wall again. In auth-disabled mode a 401 is a real API error.
+    await supabase?.auth.signOut().catch(() => {});
+    if (window.location.pathname !== '/') window.location.assign('/');
+  }
   if (!res.ok) {
     let message = `${res.status} ${res.statusText}`;
     try {
